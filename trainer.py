@@ -14,7 +14,7 @@ from utils import DiceLoss
 from torchvision import transforms
 
 
-def worker_init_fn(args, worker_id):
+def worker_init_fn(worker_id):
     random.seed(1234 + worker_id)
 
 def trainer_synapse(args, model, snapshot_path):

@@ -1,0 +1,24 @@
+python train.py --dataset Synapse --cfg configs/cswin_tiny_224_lite.yaml --root_path ./datasets/Synapse/ --max_epochs 150 --output_dir ./pretrain --img_size 224 --base_lr 0.05 --batch_size 48
+
+python test.py --dataset Synapse --cfg configs/cswin_tiny_224_lite.yaml --is_saveni --volume_path ./datasets/Synapse/  --output_dir ./pretrain --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+
+Mean class 1 mean_dice 0.863615 mean_hd95 11.114400
+Mean class 2 mean_dice 0.598189 mean_hd95 29.964908
+Mean class 3 mean_dice 0.811614 mean_hd95 53.332070
+Mean class 4 mean_dice 0.754975 mean_hd95 54.908476
+Mean class 5 mean_dice 0.939391 mean_hd95 29.321815
+Mean class 6 mean_dice 0.659015 mean_hd95 13.284079
+Mean class 7 mean_dice 0.911888 mean_hd95 13.792706
+Mean class 8 mean_dice 0.821477 mean_hd95 19.108438
+Testing performance in best val model: mean_dice : 0.795021 mean_hd95 : 28.103361
+
+python test.py --dataset Synapse --cfg configs/cswin_tiny_224_lite.yaml --is_saveni --volume_path ./datasets/Synapse_blurred/  --output_dir ./pretrain --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+
+Mean class 1 mean_dice 0.098668 mean_hd95 146.708280
+Mean class 2 mean_dice 0.064152 mean_hd95 193.925811
+Mean class 3 mean_dice 0.276523 mean_hd95 179.101133
+Mean class 4 mean_dice 0.178938 mean_hd95 140.529566
+Mean class 5 mean_dice 0.802239 mean_hd95 39.595233
+Mean class 6 mean_dice 0.149373 mean_hd95 61.993034
+Mean class 7 mean_dice 0.538624 mean_hd95 131.319157
+Mean class 8 mean_dice 0.684799 mean_hd95 22.437550
