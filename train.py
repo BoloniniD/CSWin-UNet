@@ -15,7 +15,7 @@ parser.add_argument('--root_path', type=str,
 parser.add_argument('--dataset', type=str,
                     default='Synapse', help='experiment_name')
 parser.add_argument('--list_dir', type=str,
-                    default='./lists/lists_Synapse', help='list dir')
+                    default='./lists/lists_Synapse_blurred', help='list dir')
 parser.add_argument('--num_classes', type=int,
                     default=9, help='output channel of network')
 parser.add_argument('--output_dir', type=str, help='output dir')                   
@@ -79,9 +79,14 @@ if __name__ == "__main__":
     dataset_config = {
         'Synapse': {
             'root_path': args.root_path,
-            'list_dir': './lists/lists_Synapse',
+            'list_dir': './lists/lists_Synapse_blurred',
             'num_classes': 9,
         },
+        'kits23': {
+            'root_path': args.root_path,
+            'list_dir': './lists/kits23',
+            'num_classes': 4,
+        }
     }
 
     if args.batch_size != 24 and args.batch_size % 6 == 0:
@@ -95,5 +100,5 @@ if __name__ == "__main__":
     net = ViT_seg(config, img_size=args.img_size, num_classes=args.num_classes).cuda()
     net.load_from(config)
 
-    trainer = {'Synapse': trainer_synapse,}
+    trainer = {'Synapse': trainer_synapse, 'kits23': trainer_synapse}
     trainer[dataset_name](args, net, args.output_dir)

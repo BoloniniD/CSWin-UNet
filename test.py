@@ -66,6 +66,8 @@ config = get_config(args)
 def inference(args, model, test_save_path=None):
     if args.dataset == "Synapse":
         db_test = args.Dataset(base_dir=args.volume_path, split="test_vol", list_dir=args.list_dir)
+    elif args.dataset == "kits23":
+        db_test = args.Dataset(base_dir=args.volume_path, split="test_vol", list_dir=args.list_dir)
     testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
     logging.info("{} test iterations per epoch".format(len(testloader)))
     model.eval()
@@ -107,6 +109,13 @@ if __name__ == "__main__":
             'num_classes': 9,
             'z_spacing': 1,
         },
+        'kits23': {
+            'Dataset': Synapse_dataset,
+            'volume_path': args.volume_path,
+            'list_dir': './lists/kits23',
+            'num_classes': 4,
+            'z_spacing': 1,
+        },
     }
     dataset_name = args.dataset
     args.num_classes = dataset_config[dataset_name]['num_classes']
@@ -126,7 +135,7 @@ if __name__ == "__main__":
 
     log_folder = './test_log/test_log_'
     os.makedirs(log_folder, exist_ok=True)
-    logging.basicConfig(filename=log_folder + '/'+snapshot_name+".txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
+    logging.basicConfig(filename="./log.txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
     logging.info(str(args))
     logging.info(snapshot_name)

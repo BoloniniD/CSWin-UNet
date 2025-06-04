@@ -6,6 +6,7 @@ import torch
 from scipy import ndimage
 from scipy.ndimage.interpolation import zoom
 from torch.utils.data import Dataset
+from loguru import logger
 
 
 def random_rot_flip(image, label):
@@ -47,11 +48,12 @@ class RandomGenerator(object):
 
 
 class Synapse_dataset(Dataset):
-    def __init__(self, base_dir, list_dir, split, transform=None):
+    def __init__(self, base_dir, list_dir, split, transform=None, is_kits=False):
         self.transform = transform  # using transform in torch!
         self.split = split
         self.sample_list = open(os.path.join(list_dir, self.split+'.txt')).readlines()
         self.data_dir = base_dir
+        self.is_kits = is_kits
 
     def __len__(self):
         return len(self.sample_list)
@@ -61,12 +63,18 @@ class Synapse_dataset(Dataset):
             slice_name = self.sample_list[idx].strip('\n')
             data_path = os.path.join(self.data_dir, slice_name+'.npz')
             data = np.load(data_path)
-            image, label = data['image'], data['label']
+            if "label" in data:
+                image, label = data['image'], data['label']
+            else:
+                image, label = data['image'], data['segmentation']
         else:
             vol_name = self.sample_list[idx].strip('\n')
             filepath = self.data_dir + "/{}.npy.h5".format(vol_name)
             data = h5py.File(filepath)
-            image, label = data['image'][:], data['label'][:]
+            if "label" in data:
+                image, label = data['image'][:], data['label'][:]
+            elif "segmentations" in data:
+                image, label = data['images'][:], data['segmentations'][:]
 
         sample = {'image': image, 'label': label}
         if self.transform:

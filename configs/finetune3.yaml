@@ -1,0 +1,10 @@
+MODEL:
+  TYPE: cswin
+  NAME: cswin_tiny_224
+  DROP_PATH_RATE: 0.2
+  PRETRAIN_CKPT: "./finetuned-3rd-attempt/model_lr0.001_wd0.0001_epoch50.pth"
+  CSWIN:
+    EMBED_DIM: 64
+    DEPTH: [ 1, 2, 9, 1 ]
+    NUM_HEADS: [ 2, 4, 8, 16 ]
+    SPLIT_SIZE: [1, 2, 7, 7]

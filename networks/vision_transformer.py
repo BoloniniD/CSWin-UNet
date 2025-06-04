@@ -49,7 +49,12 @@ class CSwinUnet(nn.Module):
             print("pretrained_path:{}".format(pretrained_path))
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             pretrained_dict = torch.load(pretrained_path, map_location=device)
-            pretrained_dict = pretrained_dict['state_dict_ema']
+            if 'state_dict_ema' in pretrained_dict:
+                pretrained_dict = pretrained_dict['state_dict_ema']
+            elif 'state_dict' in pretrained_dict:
+                pretrained_dict = pretrained_dict['state_dict']
+            elif 'model' in pretrained_dict:
+                pretrained_dict = pretrained_dict['model']
             model_dict = self.cswin_unet.state_dict()
             full_dict = copy.deepcopy(pretrained_dict)
             for k, v in pretrained_dict.items():
