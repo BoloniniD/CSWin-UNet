@@ -159,6 +159,8 @@ Mean class 1 mean_dice 0.901241 mean_hd95 5.122825
 Mean class 2 mean_dice 0.624639 mean_hd95 23.709785
 Mean class 3 mean_dice 0.640415 mean_hd95 15.788369
 
+ - try lower lr
+
 
 Train on Kits23 while preserving Synapse knowledge with surgical finetuning
 
@@ -221,3 +223,9 @@ Mean class 5 mean_dice 0.936828 mean_hd95 31.812498
 Mean class 6 mean_dice 0.664405 mean_hd95 13.499805
 Mean class 7 mean_dice 0.910047 mean_hd95 15.463934
 Mean class 8 mean_dice 0.816461 mean_hd95 17.653244
+
+show some baseline
+
+three tasks
+
+tpgm+surgical mix
