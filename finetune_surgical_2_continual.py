@@ -29,8 +29,10 @@ parser.add_argument('--dataset', type=str,
                     default='kits23', help='experiment_name')
 parser.add_argument('--list_dir', type=str,
                     default='./lists/kits23', help='list dir')
-parser.add_argument('--num_classes', type=int,
-                    default=4, help='output channel of network')
+parser.add_argument('--num_classes_old', type=int,
+                    default=9, help='number of classes in the old model')
+parser.add_argument('--num_classes_new', type=int,
+                    default=4, help='number of classes in the new dataset')
 parser.add_argument('--output_dir', type=str, help='output dir')
 parser.add_argument('--max_iterations', type=int,
                     default=10000, help='maximum epoch number to train')
@@ -50,18 +52,21 @@ parser.add_argument('--seed', type=int,
 parser.add_argument('--cfg', type=str, required=True, metavar="FILE", help='path to config file', )
 parser.add_argument('--pretrained_path', type=str, required=True,
                     help='path to pretrained model checkpoint')
-parser.add_argument('--data_fraction', type=float, default=0.1,
-                    help='fraction of data to use for finetuning (default: 0.1)')
-parser.add_argument('--freeze_layers', type=int, default=0,
-                    help='number of transformer layers to freeze (0 = no freezing)')
+parser.add_argument('--data_fraction', type=float, default=1.0,
+                    help='fraction of data to use for finetuning (default: 1.0)')
+
+# Continual learning arguments
+parser.add_argument('--kd_temperature', type=float, default=3.0,
+                    help='temperature for knowledge distillation')
+parser.add_argument('--kd_weight', type=float, default=0.5,
+                    help='weight for knowledge distillation loss')
+parser.add_argument('--freeze_old_classes', action='store_true',
+                    help='freeze weights for old class predictions')
 
 # Surgical fine-tuning arguments
 parser.add_argument('--auto_tune', type=str, default='RGN',
                     choices=['none', 'RGN', 'eb-criterion'],
                     help='Auto-tuning method for surgical fine-tuning')
-parser.add_argument('--tune_layers', type=str, default='all',
-                    choices=['stem', 'encoder', 'decoder', 'output', 'all'],
-                    help='Which layers to fine-tune')
 parser.add_argument('--gradient_batches', type=int, default=5,
                     help='Number of batches to use for gradient analysis')
 
@@ -90,52 +95,139 @@ args = parser.parse_args()
 config = get_config(args)
 
 
-def get_nested_params(module):
-    """Helper function to get parameters from nested modules"""
-    params = []
-    if hasattr(module, 'parameters'):
-        params.extend(list(module.parameters()))
-    return params
+class ContinualLearningModel(nn.Module):
+    """Wrapper model for continual learning that expands the output layer"""
+    def __init__(self, base_model, num_classes_old, num_classes_new):
+        super().__init__()
+        self.base_model = base_model
+        self.num_classes_old = num_classes_old
+        self.num_classes_new = num_classes_new
+        # Total classes = old + new - 1 (shared background)
+        self.num_classes_total = num_classes_old + num_classes_new - 1
 
+        # Find and replace the final classification layer
+        self._expand_final_layer()
 
-def get_parameter_groups(model):
-    """Parameter groups based on the actual CSwin-UNet architecture"""
-    # Handle DataParallel wrapper
-    if isinstance(model, nn.DataParallel):
-        model = model.module
+    def _expand_final_layer(self):
+        """Find and expand the final classification layer"""
+        # Common names for final layers in segmentation models
+        final_layer_candidates = ['output', 'final', 'classifier', 'head', 'segmentation_head']
 
-    param_groups = {}
+        # First, try to find by common names
+        final_layer_found = False
+        for candidate_name in final_layer_candidates:
+            if hasattr(self.base_model, candidate_name):
+                module = getattr(self.base_model, candidate_name)
+                if self._is_classification_layer(module):
+                    new_layer = self._create_expanded_layer(module)
+                    setattr(self.base_model, candidate_name, new_layer)
+                    print(f"Expanded final layer '{candidate_name}': {self.num_classes_old} -> {self.num_classes_total} classes")
+                    final_layer_found = True
+                    break
 
-    # Get all named parameters
-    param_dict = dict(model.named_parameters())
+        # If not found by name, search through all modules
+        if not final_layer_found:
+            final_layer_found = self._search_and_replace_final_layer()
 
-    # Group parameters by layer type
-    stem_params = []
-    encoder_params = []
-    decoder_params = []
-    output_params = []
+        if not final_layer_found:
+            raise RuntimeError("Could not find the final classification layer to expand")
 
-    for name, param in param_dict.items():
-        if any(x in name for x in ['stage1_conv_embed', 'patch_embed']):
-            stem_params.append(param)
-        elif any(x in name for x in ['stage1', 'stage2', 'stage3', 'stage4', 'merge']):
-            encoder_params.append(param)
-        elif any(x in name for x in ['stage_up', 'upsample', 'concat_linear', 'norm_up']):
-            decoder_params.append(param)
-        elif any(x in name for x in ['output', 'final']):
-            output_params.append(param)
+    def _is_classification_layer(self, module):
+        """Check if a module is likely the final classification layer"""
+        if isinstance(module, nn.Conv2d):
+            return module.out_channels == self.num_classes_old
+        elif isinstance(module, nn.Linear):
+            return module.out_features == self.num_classes_old
+        return False
+
+    def _create_expanded_layer(self, old_module):
+        """Create an expanded version of the classification layer"""
+        if isinstance(old_module, nn.Conv2d):
+            # Handle Conv2d layer
+            new_conv = nn.Conv2d(
+                in_channels=old_module.in_channels,
+                out_channels=self.num_classes_total,
+                kernel_size=old_module.kernel_size,
+                stride=old_module.stride,
+                padding=old_module.padding,
+                bias=old_module.bias is not None
+            )
+
+            # Copy old weights for existing classes
+            with torch.no_grad():
+                new_conv.weight[:self.num_classes_old] = old_module.weight
+
+                # Handle bias if it exists
+                if old_module.bias is not None:
+                    new_conv.bias[:self.num_classes_old] = old_module.bias
+                    # Initialize new class biases
+                    nn.init.constant_(new_conv.bias[self.num_classes_old:], 0)
+
+                # Initialize new class weights
+                nn.init.kaiming_normal_(new_conv.weight[self.num_classes_old:])
+
+            return new_conv
+
+        elif isinstance(old_module, nn.Linear):
+            # Handle Linear layer
+            new_linear = nn.Linear(
+                in_features=old_module.in_features,
+                out_features=self.num_classes_total,
+                bias=old_module.bias is not None
+            )
+
+            # Copy old weights for existing classes
+            with torch.no_grad():
+                new_linear.weight[:self.num_classes_old] = old_module.weight
+
+                # Handle bias if it exists
+                if old_module.bias is not None:
+                    new_linear.bias[:self.num_classes_old] = old_module.bias
+                    # Initialize new class biases
+                    nn.init.constant_(new_linear.bias[self.num_classes_old:], 0)
+
+                # Initialize new class weights
+                nn.init.kaiming_normal_(new_linear.weight[self.num_classes_old:])
+
+            return new_linear
+
         else:
-            # Default to encoder if unclear
-            encoder_params.append(param)
+            raise TypeError(f"Unsupported layer type for expansion: {type(old_module)}")
 
-    param_groups = {
-        'stem': stem_params,
-        'encoder': encoder_params,
-        'decoder': decoder_params,
-        'output': output_params
-    }
+    def _search_and_replace_final_layer(self):
+        """Search through all modules to find and replace the final classification layer"""
+        for name, module in self.base_model.named_modules():
+            if self._is_classification_layer(module):
+                # Found potential final layer
+                new_layer = self._create_expanded_layer(module)
 
-    return param_groups
+                # Replace the module
+                parent_name = '.'.join(name.split('.')[:-1])
+                child_name = name.split('.')[-1]
+
+                if parent_name:
+                    parent = self.base_model
+                    for part in parent_name.split('.'):
+                        parent = getattr(parent, part)
+                    setattr(parent, child_name, new_layer)
+                else:
+                    setattr(self.base_model, child_name, new_layer)
+
+                print(f"Expanded final layer '{name}': {self.num_classes_old} -> {self.num_classes_total} classes")
+                return True
+
+        return False
+
+    def forward(self, x):
+        return self.base_model(x)
+
+
+def knowledge_distillation_loss(outputs, old_outputs, temperature=3.0):
+    """Calculate knowledge distillation loss"""
+    log_p = F.log_softmax(outputs / temperature, dim=1)
+    q = F.softmax(old_outputs / temperature, dim=1)
+    kd_loss = F.kl_div(log_p, q, reduction='batchmean') * (temperature ** 2)
+    return kd_loss
 
 
 def get_layer_names(model):
@@ -147,10 +239,8 @@ def get_layer_names(model):
     return layer_names
 
 
-def get_lr_weights(model, loader, args, criterion):
-    """
-    Calculate learning rate weights for different layers based on gradients
-    """
+def get_lr_weights(model, loader, args, criterion, num_classes_new):
+    """Calculate learning rate weights for different layers based on gradients"""
     layer_names = get_layer_names(model)
     metrics = defaultdict(list)
     average_metrics = defaultdict(float)
@@ -167,9 +257,13 @@ def get_lr_weights(model, loader, args, criterion):
         image_batch, label_batch = image_batch.cuda(), label_batch.cuda()
 
         outputs = model(image_batch)
-        # Extract relevant channels for loss calculation
-        outputs_relevant = torch.cat([outputs[:,0:1], outputs[:,9:12]], dim=1)
-        loss_ce = criterion(outputs_relevant, label_batch.long())
+
+        # Map new dataset labels to the expanded label space
+        # New dataset classes go after old classes (except background stays at 0)
+        label_batch_mapped = label_batch.clone()
+        label_batch_mapped[label_batch > 0] += args.num_classes_old - 1
+
+        loss_ce = criterion(outputs, label_batch_mapped.long())
 
         grad_xent = torch.autograd.grad(
             outputs=loss_ce, inputs=model.parameters(), retain_graph=True, allow_unused=True
@@ -209,80 +303,6 @@ def get_lr_weights(model, loader, args, criterion):
             average_metrics[k] = np.array(v).mean(0)
 
     return average_metrics
-
-
-def load_pretrained_weights(model, pretrained_path, num_classes_old=9, num_classes_new=12):
-    """Load pretrained weights and adapt the final layer for different number of classes"""
-    print(f"Loading pretrained model from {pretrained_path}")
-    pretrained_dict = torch.load(pretrained_path, map_location='cpu')
-
-    # Remove 'module.' prefix if present (from DataParallel)
-    pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
-
-    model_dict = model.state_dict()
-
-    # Handle output layer expansion
-    output_weight_key = 'output.weight'
-    output_bias_key = 'output.bias'
-
-    if output_weight_key in pretrained_dict and output_bias_key in pretrained_dict:
-        print("Expanding output layer for continual learning")
-        pretrained_output_weight = pretrained_dict[output_weight_key]  # [9, C, 1, 1]
-        pretrained_output_bias = pretrained_dict[output_bias_key]      # [9]
-
-        # Create new output weights and biases
-        new_output_weight = torch.zeros(num_classes_new, *pretrained_output_weight.shape[1:])
-        new_output_bias = torch.zeros(num_classes_new)
-
-        # Copy old weights and biases
-        new_output_weight[:num_classes_old] = pretrained_output_weight
-        new_output_bias[:num_classes_old] = pretrained_output_bias
-
-        # Initialize new classes with zeros
-        new_output_weight[num_classes_old:] = 0
-        new_output_bias[num_classes_old:] = 0
-
-        # Update model dict with expanded output layer
-        model_dict[output_weight_key] = new_output_weight
-        model_dict[output_bias_key] = new_output_bias
-
-        # Remove output layer from pretrained_dict to avoid overwriting
-        del pretrained_dict[output_weight_key]
-        del pretrained_dict[output_bias_key]
-
-    # Filter out layers that don't match in size
-    pretrained_dict_filtered = {}
-    for k, v in pretrained_dict.items():
-        if k in model_dict and v.shape == model_dict[k].shape:
-            pretrained_dict_filtered[k] = v
-        else:
-            print(f"Skipping layer {k} due to shape mismatch or not found in model")
-
-    model_dict.update(pretrained_dict_filtered)
-    model.load_state_dict(model_dict, strict=False)
-    print(f"Loaded {len(pretrained_dict_filtered)}/{len(model_dict)} layers from pretrained model")
-
-    return model
-
-
-def freeze_layers(model, num_layers_to_freeze):
-    """Freeze specified number of transformer layers"""
-    if num_layers_to_freeze == 0:
-        return
-
-    # Freeze patch embedding
-    for name, param in model.named_parameters():
-        if 'patch_embed' in name or 'stage1_conv_embed' in name:
-            param.requires_grad = False
-
-    # Freeze transformer layers
-    layer_count = 0
-    for name, param in model.named_parameters():
-        if 'stage' in name and layer_count < num_layers_to_freeze:
-            param.requires_grad = False
-            layer_count += 1
-
-    print(f"Total frozen parameters: {layer_count}")
 
 
 def create_surgical_optimizer(model, base_lr, weights, args):
@@ -327,7 +347,7 @@ def create_surgical_optimizer(model, base_lr, weights, args):
 def log_layer_learning_rates(layer_info, args):
     """Log the learning rates assigned to each layer"""
     logging.info("\n" + "="*80)
-    logging.info(f"SURGICAL FINE-TUNING - {args.auto_tune.upper()} METHOD")
+    logging.info(f"CONTINUAL LEARNING - SURGICAL FINE-TUNING - {args.auto_tune.upper()} METHOD")
     logging.info("="*80)
     logging.info(f"{'Layer Name':<50} {'Weight':<12} {'Learning Rate':<15}")
     logging.info("-"*80)
@@ -348,7 +368,7 @@ def log_layer_learning_rates(layer_info, args):
     logging.info("="*80 + "\n")
 
 
-def trainer_surgical_finetune(args, model, snapshot_path):
+def trainer_continual_learning(args, model, old_model, snapshot_path):
     from datasets.dataset_synapse import Synapse_dataset, RandomGenerator
     from torch.utils.data import Subset
 
@@ -358,6 +378,7 @@ def trainer_surgical_finetune(args, model, snapshot_path):
     logging.info(str(args))
 
     base_lr = args.base_lr
+    num_classes_total = args.num_classes_old + args.num_classes_new - 1
     batch_size = args.batch_size * args.n_gpu
 
     # Load dataset
@@ -369,24 +390,30 @@ def trainer_surgical_finetune(args, model, snapshot_path):
     total_samples = len(db_train_full)
     subset_size = int(total_samples * args.data_fraction)
 
-    random.seed(args.seed)
-    indices = random.sample(range(total_samples), subset_size)
-    db_train = Subset(db_train_full, indices)
+    if args.data_fraction < 1.0:
+        random.seed(args.seed)
+        indices = random.sample(range(total_samples), subset_size)
+        db_train = Subset(db_train_full, indices)
+    else:
+        db_train = db_train_full
+        subset_size = total_samples
 
-    print(f"Using {subset_size}/{total_samples} samples ({args.data_fraction*100:.1f}%) for finetuning")
-    logging.info(f"Using {subset_size}/{total_samples} samples ({args.data_fraction*100:.1f}%) for finetuning")
+    print(f"Using {subset_size}/{total_samples} samples ({args.data_fraction*100:.1f}%) for continual learning")
+    logging.info(f"Using {subset_size}/{total_samples} samples ({args.data_fraction*100:.1f}%) for continual learning")
+    logging.info(f"Old classes: {args.num_classes_old}, New classes: {args.num_classes_new}, Total: {num_classes_total}")
 
     trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True,
                            num_workers=4, pin_memory=True, worker_init_fn=worker_init_fn)
 
     if args.n_gpu > 1:
         model = nn.DataParallel(model)
+        old_model = nn.DataParallel(old_model)
 
-    # Loss functions - use 4 classes for DiceLoss (background + 3 new classes)
+    # Loss functions
     ce_loss = CrossEntropyLoss()
-    dice_loss = DiceLoss(4)  # Only for new classes + background
+    dice_loss = DiceLoss(num_classes_total)
 
-    # Initialize optimizer (will be recreated if using auto-tuning)
+    # Initialize optimizer
     if args.auto_tune == "none":
         optimizer, _ = create_surgical_optimizer(model, base_lr, {}, args)
     else:
@@ -398,21 +425,24 @@ def trainer_surgical_finetune(args, model, snapshot_path):
     max_epoch = args.max_epochs
     max_iterations = args.max_epochs * len(trainloader)
 
+    logging.info(f"Continual Learning Configuration:")
+    logging.info(f"KD Temperature: {args.kd_temperature}")
+    logging.info(f"KD Weight: {args.kd_weight}")
     logging.info(f"Auto-tune method: {args.auto_tune}")
-    logging.info(f"Tune layers: {args.tune_layers}")
     logging.info("{} iterations per epoch. {} max iterations ".format(len(trainloader), max_iterations))
 
     iterator = tqdm(range(max_epoch), ncols=70)
 
     for epoch_num in iterator:
         model.train()
+        old_model.eval()  # Keep old model in eval mode
 
         # Surgical fine-tuning: Calculate gradient weights at the beginning of each epoch
         if args.auto_tune != "none":
-            logging.info(f"\n[EPOCH {epoch_num + 1}] Calculating gradient weights...")
+            logging.info(f"\n[EPOCH {epoch_num + 1}] Calculating gradient weights for continual learning...")
 
             # Calculate gradient-based weights
-            weights = get_lr_weights(model, trainloader, args, ce_loss)
+            weights = get_lr_weights(model, trainloader, args, ce_loss, args.num_classes_new)
 
             if args.auto_tune == "RGN":
                 # Normalize weights by maximum weight
@@ -425,14 +455,10 @@ def trainer_surgical_finetune(args, model, snapshot_path):
             elif args.auto_tune == "eb-criterion":
                 # Apply threshold-based selection
                 if weights:
-                    threshold = 0.95  # You can make this configurable
+                    threshold = 0.95
                     min_weight = min(weights.values())
                     max_weight = max(weights.values())
                     logging.info(f"EB-Criterion: Weight range before thresholding: {min_weight:.6f} - {max_weight:.6f}")
-                    logging.info(f"EB-Criterion: Applying threshold: {threshold}")
-
-                    above_threshold = sum(1 for v in weights.values() if v >= threshold)
-                    logging.info(f"EB-Criterion: {above_threshold}/{len(weights)} layers above threshold")
 
                     for k in weights:
                         weights[k] = 1.0 if weights[k] >= threshold else 0.0
@@ -448,15 +474,30 @@ def trainer_surgical_finetune(args, model, snapshot_path):
             image_batch, label_batch = sampled_batch['image'], sampled_batch['label']
             image_batch, label_batch = image_batch.cuda(), label_batch.cuda()
 
+            # Forward pass through both models
             outputs = model(image_batch)
+            with torch.no_grad():
+                old_outputs = old_model(image_batch)
 
-            # Extract relevant channels: background (0) and new classes (9,10,11)
-            outputs_relevant = torch.cat([outputs[:,0:1], outputs[:,9:12]], dim=1)
+            # Map new dataset labels to the expanded label space
+            # Background (0) stays 0, new classes (1,2,3) become (9,10,11)
+            label_batch_mapped = label_batch.clone()
+            label_batch_mapped[label_batch > 0] += args.num_classes_old - 1
 
-            # Calculate losses only on new classes + background
-            loss_ce = ce_loss(outputs_relevant, label_batch.long())
-            loss_dice = dice_loss(outputs_relevant, label_batch, softmax=True)
-            loss = 0.4 * loss_ce + 0.6 * loss_dice
+            # Calculate losses
+            loss_ce = ce_loss(outputs, label_batch_mapped.long())
+            loss_dice = dice_loss(outputs, label_batch_mapped, softmax=True)
+
+            # Knowledge distillation loss (only for old classes)
+            loss_kd = knowledge_distillation_loss(
+                outputs[:, :args.num_classes_old],
+                old_outputs,
+                temperature=args.kd_temperature
+            )
+
+            # Combined loss
+            loss_seg = 0.4 * loss_ce + 0.6 * loss_dice
+            loss = (1 - args.kd_weight) * loss_seg + args.kd_weight * loss_kd
 
             optimizer.zero_grad()
             loss.backward()
@@ -466,28 +507,28 @@ def trainer_surgical_finetune(args, model, snapshot_path):
             writer.add_scalar('info/lr', optimizer.param_groups[0]['lr'], iter_num)
             writer.add_scalar('info/total_loss', loss, iter_num)
             writer.add_scalar('info/loss_ce', loss_ce, iter_num)
+            writer.add_scalar('info/loss_dice', loss_dice, iter_num)
+            writer.add_scalar('info/loss_kd', loss_kd, iter_num)
 
             if iter_num % 10 == 0:
-                logging.info('iteration %d : loss : %f, loss_ce: %f' % (iter_num, loss.item(), loss_ce.item()))
+                logging.info('iteration %d : loss : %f, loss_ce: %f, loss_kd: %f' %
+                           (iter_num, loss.item(), loss_ce.item(), loss_kd.item()))
 
             if iter_num % 20 == 0:
                 image = image_batch[0, 0:1, :, :]
                 image = (image - image.min()) / (image.max() - image.min())
                 writer.add_image('train/Image', image, iter_num)
-
-                # Visualize only the new classes + background
-                outputs_vis = torch.argmax(torch.softmax(outputs_relevant, dim=1), dim=1, keepdim=True)
-                writer.add_image('train/Prediction', outputs_vis[0, ...] * 50, iter_num)
-
-                labs = label_batch[0, ...].unsqueeze(0) * 50
+                outputs_vis = torch.argmax(torch.softmax(outputs, dim=1), dim=1, keepdim=True)
+                writer.add_image('train/Prediction', outputs_vis[0, ...] * 20, iter_num)
+                labs = label_batch_mapped[0, ...].unsqueeze(0) * 20
                 writer.add_image('train/GroundTruth', labs, iter_num)
 
         if scheduler is not None:
             scheduler.step()
 
         # Save model periodically
-        if (epoch_num + 1) % 10 == 0 or epoch_num == max_epoch - 1:
-            save_mode_path = os.path.join(snapshot_path, f'surgical_finetuned_epoch_{epoch_num}.pth')
+        if (epoch_num + 1) % 5 == 0 or epoch_num == max_epoch - 1:
+            save_mode_path = os.path.join(snapshot_path, f'continual_epoch_{epoch_num}.pth')
             if args.n_gpu > 1:
                 torch.save(model.module.state_dict(), save_mode_path)
             else:
@@ -495,7 +536,7 @@ def trainer_surgical_finetune(args, model, snapshot_path):
             logging.info("save model to {}".format(save_mode_path))
 
     writer.close()
-    return "Surgical Finetuning Finished!"
+    return "Continual Learning Finished!"
 
 
 def worker_init_fn(worker_id):
@@ -515,28 +556,39 @@ if __name__ == "__main__":
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
 
-    args.dataset = 'kits23'
-
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    total_classes = 12
-    net = ViT_seg(config, img_size=args.img_size, num_classes=total_classes).cuda()
+    # Create base model with old number of classes
+    net = ViT_seg(config, img_size=args.img_size, num_classes=args.num_classes_old).cuda()
     net.load_from(config)
 
-    net = load_pretrained_weights(net, args.pretrained_path, num_classes_old=9, num_classes_new=total_classes)
+    # Load pretrained weights
+    print(f"Loading pretrained model from {args.pretrained_path}")
+    pretrained_dict = torch.load(args.pretrained_path, map_location='cpu')
+    pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
+    net.load_state_dict(pretrained_dict, strict=True)
 
-    if args.freeze_layers > 0:
-        freeze_layers(net, args.freeze_layers)
+    # Create old model for knowledge distillation
+    old_net = copy.deepcopy(net)
+    old_net.eval()
+    for param in old_net.parameters():
+        param.requires_grad = False
 
-    print(f"\n=== Surgical Fine-tuning Configuration ===")
+    # Create continual learning model with expanded output
+    cl_model = ContinualLearningModel(net, args.num_classes_old, args.num_classes_new).cuda()
+
+    # Print continual learning configuration
+    print(f"\n=== Continual Learning Configuration ===")
+    print(f"Old model classes: {args.num_classes_old}")
+    print(f"New dataset classes: {args.num_classes_new}")
+    print(f"Total classes: {args.num_classes_old + args.num_classes_new - 1}")
+    print(f"KD Temperature: {args.kd_temperature}")
+    print(f"KD Weight: {args.kd_weight}")
     print(f"Auto-tune method: {args.auto_tune}")
-    print(f"Tune layers: {args.tune_layers}")
     print(f"Data fraction: {args.data_fraction}")
-    print(f"Gradient batches: {args.gradient_batches}")
     print(f"Base learning rate: {args.base_lr}")
     print(f"Max epochs: {args.max_epochs}")
-    print(f"Total classes: {total_classes} (9 old + 3 new)")
     print("=" * 45)
 
-    trainer_surgical_finetune(args, net, args.output_dir)
+    trainer_continual_learning(args, cl_model, old_net, args.output_dir)

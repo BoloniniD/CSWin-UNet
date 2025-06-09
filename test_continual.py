@@ -100,6 +100,16 @@ def inference(args, model, test_save_path=None):
     logging.info('Testing performance in best val model: mean_dice : %f mean_hd95 : %f' % (performance, mean_hd95))
     return "Testing Finished!"
 
+def remove_base_model_prefix(state_dict):
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        if key.startswith('base_model.'):
+            new_key = key.replace('base_model.', '', 1)
+            new_state_dict[new_key] = value
+        else:
+            new_state_dict[key] = value
+    return new_state_dict
+
 
 if __name__ == "__main__":
 
@@ -156,6 +166,7 @@ if __name__ == "__main__":
 
     # Load model weights
     state_dict = torch.load(snapshot)
+    state_dict = remove_base_model_prefix(state_dict=state_dict)
     net.load_state_dict(state_dict)
     print(f"Loaded model from {snapshot}")
 

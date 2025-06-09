@@ -479,3 +479,17 @@
 [16:39:27.532] Total layers: 463, Active layers: 349, Frozen layers: 114
 [16:39:27.532] ================================================================================
 
+[11:58:56.558] Namespace(root_path='./datasets/kits23/train_npz', dataset='kits23', list_dir='./lists/kits23', num_classes=4, num_classes_old=9, output_dir='./finetune_surgical_kits23_continual', max_iterations=10000, max_epochs=30, batch_size=32, n_gpu=1, deterministic=1, base_lr=0.0005, img_size=224, seed=1234, cfg='configs/finetune.yaml', pretrained_path='./pretrain/epoch_149.pth', data_fraction=0.5, freeze_layers=0, auto_tune='RGN', tune_layers='all', gradient_batches=5, continual_method='combined', distillation_weight=0.5, ewc_weight=0.1, temperature=4.0, preserve_background=True, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[11:58:56.581] Using 47610/95221 samples (50.0%) for continual learning
+[11:59:29.746] Namespace(root_path='./datasets/kits23/train_npz', dataset='kits23', list_dir='./lists/kits23', num_classes=4, num_classes_old=9, output_dir='./finetune_surgical_kits23_continual', max_iterations=10000, max_epochs=30, batch_size=32, n_gpu=1, deterministic=1, base_lr=0.0005, img_size=224, seed=1234, cfg='configs/finetune.yaml', pretrained_path='./pretrain/epoch_149.pth', data_fraction=0.05, freeze_layers=0, auto_tune='RGN', tune_layers='all', gradient_batches=5, continual_method='combined', distillation_weight=0.5, ewc_weight=0.1, temperature=4.0, preserve_background=True, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[11:59:29.754] Using 4761/95221 samples (5.0%) for continual learning
+[12:03:13.586] Namespace(root_path='./datasets/kits23/train_npz', dataset='kits23', list_dir='./lists/kits23', num_classes=4, num_classes_old=9, output_dir='./finetune_surgical_kits23_continual', max_iterations=10000, max_epochs=30, batch_size=32, n_gpu=1, deterministic=1, base_lr=0.0005, img_size=224, seed=1234, cfg='configs/finetune.yaml', pretrained_path='./pretrain/epoch_149.pth', data_fraction=0.05, freeze_layers=0, auto_tune='RGN', tune_layers='all', gradient_batches=5, continual_method='combined', distillation_weight=0.5, ewc_weight=0.1, temperature=4.0, preserve_background=True, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[12:03:13.595] Using 4761/95221 samples (5.0%) for continual learning
+[12:03:15.261] Continual learning method: combined
+[12:03:15.261] Auto-tune method: RGN
+[12:03:15.261] Tune layers: all
+[12:03:15.261] Distillation weight: 0.5
+[12:03:15.261] EWC weight: 0.1
+[12:03:15.261] 149 iterations per epoch. 4470 max iterations 
+[12:03:15.264] 
+[EPOCH 1] Calculating gradient weights...

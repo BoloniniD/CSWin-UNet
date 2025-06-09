@@ -145,7 +145,7 @@ Mean class 1 mean_dice 0.915184 mean_hd95 4.789837
 Mean class 2 mean_dice 0.759403 mean_hd95 8.268165
 Mean class 3 mean_dice 0.703388 mean_hd95 15.011189
 
-Time to use classic finetuning:
+Using classic finetuning:
 
 Took 56:50
 
@@ -172,8 +172,24 @@ Mean class 1 mean_dice 0.881335 mean_hd95 21.221308
 Mean class 2 mean_dice 0.633252 mean_hd95 63.169096
 Mean class 3 mean_dice 0.633047 mean_hd95 21.485113
 
-python finetune_surgical_2.py --cfg configs/finetune.yaml --root_path ./datasets/kits23/train_npz --dataset kits23 --list_dir ./lists/kits23 --num_classes 4 --pretrained_path ./pretrain/epoch_149.pth --output_dir ./finetune_surgical_kits23 --max_epochs 30 --batch_size 32 --base_lr 0.0005 --img_size 224 --data_fraction 0.05
+python finetune_surgical_2_continual.py --cfg configs/finetune.yaml --root_path ./datasets/kits23/train_npz --dataset kits23 --list_dir ./lists/kits23 --num_classes_old 9 --num_classes_new 4 --pretrained_path ./pretrain/epoch_149.pth --output_dir ./finetune_surgical_continual_kits23 --max_epochs 30 --batch_size 24 --base_lr 0.0005 --img_size 224 --data_fraction 0.05 --kd_temperature 3.0 --kd_weight 0.5 --auto_tune RGN
 
+python test_continual.py --cfg configs/pretrain_kits23.yaml --dataset kits23 --volume_path ./datasets/kits23/test_vol_h5 --output_dir ./finetune_surgical_continual_kits23 --is_savenii --continual --num_classes_old 9 --num_classes_new 4
+
+Mean class 1 mean_dice 0.760605 mean_hd95 22.892088
+Mean class 2 mean_dice 0.610212 mean_hd95 58.785599
+Mean class 3 mean_dice 0.580418 mean_hd95 23.212778
+
+python test_continual.py --dataset Synapse --cfg configs/pretrain_kits23.yaml --is_savenii --volume_path ./datasets/Synapse  --output_dir ./finetune_surgical_continual_kits23 --model_num_classes 9 --img_size 224
+
+Mean class 1 mean_dice 0.789267 mean_hd95 13.443845
+Mean class 2 mean_dice 0.521684 mean_hd95 34.795490
+Mean class 3 mean_dice 0.712037 mean_hd95 71.938271
+Mean class 4 mean_dice 0.631188 mean_hd95 74.185399
+Mean class 5 mean_dice 0.866828 mean_hd95 38.811248
+Mean class 6 mean_dice 0.524405 mean_hd95 17.279750
+Mean class 7 mean_dice 0.800047 mean_hd95 17.783524
+Mean class 8 mean_dice 0.686461 mean_hd95 21.360425
 
 =========== TPGM w/ Kits23
 

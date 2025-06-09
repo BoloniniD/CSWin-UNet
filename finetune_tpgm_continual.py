@@ -273,6 +273,7 @@ def load_pretrained_weights(model, pretrained_path):
     print(f"Loading pretrained model from {pretrained_path}")
     pretrained_dict = torch.load(pretrained_path, map_location='cpu')
     pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
+    pretrained_dict = {k.replace('base_model.', ''): v for k, v in pretrained_dict.items()}
     model_dict = model.state_dict()
 
     # Load all weights including output layers
