@@ -2,6 +2,9 @@
 import argparse
 import logging
 import os
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 import random
 import sys
 import numpy as np
@@ -74,6 +77,54 @@ parser.add_argument('--throughput', action='store_true', help='Test throughput o
 
 args = parser.parse_args()
 config = get_config(args)
+
+
+def get_nested_params(module):
+    """Helper function to get parameters from nested modules"""
+    params = []
+    if hasattr(module, 'parameters'):
+        params.extend(list(module.parameters()))
+    return params
+
+
+def get_parameter_groups(model, _):
+    """Parameter groups based on the actual CSWin-UNet architecture"""
+    cswin = model.cswin_unet
+
+    # Create comprehensive parameter groups for surgical fine-tuning
+    return {
+        'stem': list(cswin.stage1_conv_embed.parameters()),
+
+        # Encoder blocks
+        'encoder1': get_nested_params(cswin.stage1),
+        'merge1': list(cswin.merge1.parameters()),
+        'encoder2': get_nested_params(cswin.stage2),
+        'merge2': list(cswin.merge2.parameters()),
+        'encoder3': get_nested_params(cswin.stage3),
+        'merge3': list(cswin.merge3.parameters()),
+        'encoder4': get_nested_params(cswin.stage4),
+        'bottleneck': list(cswin.norm.parameters()),
+
+        # Decoder blocks
+        'decoder4': get_nested_params(cswin.stage_up4),
+        'upsample4': list(cswin.upsample4.parameters()),
+        'concat4': list(cswin.concat_linear4.parameters()),
+
+        'decoder3': get_nested_params(cswin.stage_up3),
+        'upsample3': list(cswin.upsample3.parameters()),
+        'concat3': list(cswin.concat_linear3.parameters()),
+
+        'decoder2': get_nested_params(cswin.stage_up2),
+        'upsample2': list(cswin.upsample2.parameters()),
+        'concat2': list(cswin.concat_linear2.parameters()),
+
+        'decoder1': get_nested_params(cswin.stage_up1),
+        'upsample1': list(cswin.upsample1.parameters()),
+
+        # Final layers
+        'norm_up': list(cswin.norm_up.parameters()),
+        'output': list(cswin.output.parameters())
+    }
 
 
 def load_pretrained_weights(model, pretrained_path, num_classes_old=9, num_classes_new=4):
@@ -242,8 +293,11 @@ if __name__ == "__main__":
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
 
-    args.dataset = 'kits23'
-    args.num_classes = 4
+    #args.dataset = 'kits23'
+    #args.num_classes = 4
+
+    args.dataset = 'lits17'
+    args.num_classes = 3
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)

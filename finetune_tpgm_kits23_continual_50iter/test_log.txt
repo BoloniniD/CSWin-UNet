@@ -1,0 +1,24 @@
+[16:02:18.198] Namespace(volume_path='./datasets/kits23/test_vol_h5', dataset='kits23', num_classes=4, model_num_classes=4, list_dir='./lists/kits23', output_dir='./finetune_tpgm_kits23_continual_50iter', max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1, is_pretrain=True)
+[16:02:18.198] Testing model: ./finetune_tpgm_kits23_continual_50iter\finetuned_final.pth
+[16:02:18.199] Model has 9 total classes, testing 4 classes for kits23
+[16:02:18.453] FLOPs: 4.723G
+[16:02:18.453] Params: 23.568M
+[16:02:18.454] 15 test iterations per epoch
+[16:02:34.962] idx 0 case case00142 mean_dice 0.336412 mean_hd95 72.308318
+[16:02:36.997] idx 1 case case00152 mean_dice 0.065417 mean_hd95 40.541727
+[16:02:40.422] idx 2 case case00187 mean_dice 0.347964 mean_hd95 6.368324
+[16:02:53.127] idx 3 case case00193 mean_dice 0.011004 mean_hd95 65.794054
+[16:02:56.553] idx 4 case case00206 mean_dice 0.008529 mean_hd95 58.618126
+[16:03:28.403] idx 5 case case00246 mean_dice 0.077363 mean_hd95 44.449776
+[16:03:41.619] idx 6 case case00273 mean_dice 0.006700 mean_hd95 73.071439
+[16:03:47.643] idx 7 case case00274 mean_dice 0.048557 mean_hd95 49.749534
+[16:04:12.089] idx 8 case case00412 mean_dice 0.004772 mean_hd95 33.910477
+[16:04:16.192] idx 9 case case00426 mean_dice 0.011023 mean_hd95 13.004273
+[16:04:25.474] idx 10 case case00447 mean_dice 0.370430 mean_hd95 39.481125
+[16:04:29.308] idx 11 case case00450 mean_dice 0.343867 mean_hd95 8.881942
+[16:04:37.209] idx 12 case case00488 mean_dice 0.346115 mean_hd95 23.607299
+[16:04:41.990] idx 13 case case00533 mean_dice 0.430341 mean_hd95 61.468229
+[16:04:51.744] idx 14 case case00568 mean_dice 0.025608 mean_hd95 44.932770
+[16:04:52.266] Mean class 1 mean_dice 0.086052 mean_hd95 43.119776
+[16:04:52.266] Mean class 2 mean_dice 0.000000 mean_hd95 54.535729
+[16:04:52.266] Mean class 3 mean_dice 0.400768 mean_hd95 29.581978

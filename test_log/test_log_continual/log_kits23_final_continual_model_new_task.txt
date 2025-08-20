@@ -1,0 +1,95 @@
+[19:45:56.328] Namespace(volume_path='../data/kits23/test_vol_h5', dataset='kits23', num_classes=4, list_dir='./lists/kits23', output_dir=None, max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, continual_learning=True, model_checkpoint='./universal/synapse_to_kits23_tpgm/final_continual_model.pth', test_original_task=False, old_dataset='Synapse', Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1)
+[19:45:56.328] Testing checkpoint: ./universal/synapse_to_kits23_tpgm/final_continual_model.pth
+[19:45:56.329] Visualizations will be saved to ./test_visuals_kits23_final_continual_model_new_task
+[19:45:56.329] Testing on NEW task dataset: kits23
+[19:45:56.329] 15 test iterations per epoch
+[19:46:27.004] Namespace(volume_path='./datasets/kits23/test_vol_h5', dataset='kits23', num_classes=4, list_dir='./lists/kits23', output_dir=None, max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, continual_learning=True, model_checkpoint='./universal/synapse_to_kits23_tpgm/final_continual_model.pth', test_original_task=False, old_dataset='Synapse', Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1)
+[19:46:27.004] Testing checkpoint: ./universal/synapse_to_kits23_tpgm/final_continual_model.pth
+[19:46:27.004] Visualizations will be saved to ./test_visuals_kits23_final_continual_model_new_task
+[19:46:27.004] Testing on NEW task dataset: kits23
+[19:46:27.004] 15 test iterations per epoch
+[19:49:45.981] Namespace(volume_path='../data/kits23/test_vol_h5', dataset='kits23', num_classes=4, list_dir='./lists/kits23', output_dir=None, max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, continual_learning=True, model_checkpoint='./universal/synapse_to_kits23_tpgm/final_continual_model.pth', test_original_task=False, old_dataset='Synapse', Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1)
+[19:49:45.981] Testing checkpoint: ./universal/synapse_to_kits23_tpgm/final_continual_model.pth
+[19:49:45.981] Visualizations will be saved to ./test_visuals_kits23_final_continual_model_new_task
+[19:49:45.982] Testing on NEW task dataset: kits23
+[19:49:45.982] 15 test iterations per epoch
+[19:50:26.675] Namespace(volume_path='./datasets/kits23/test_vol_h5', dataset='kits23', num_classes=4, list_dir='./lists/kits23', output_dir=None, max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, continual_learning=True, model_checkpoint='./universal/synapse_to_kits23_tpgm/final_continual_model.pth', test_original_task=False, old_dataset='Synapse', Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1)
+[19:50:26.675] Testing checkpoint: ./universal/synapse_to_kits23_tpgm/final_continual_model.pth
+[19:50:26.675] Visualizations will be saved to ./test_visuals_kits23_final_continual_model_new_task
+[19:50:26.676] Testing on NEW task dataset: kits23
+[19:50:26.676] 15 test iterations per epoch
+[19:50:29.915] Batch 0: Image shape: torch.Size([1, 274, 224, 224]), Label shape: torch.Size([1, 274, 224, 224])
+[19:50:30.569] Image shape: torch.Size([1, 274, 224, 224]), Label shape: torch.Size([1, 274, 224, 224])
+[19:50:30.572] Processing 274 slices, prediction shape: (274, 224, 224)
+[19:50:40.193] Error processing case case00142: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:50:40.193] Image shape: torch.Size([1, 274, 224, 224]), Label shape: torch.Size([1, 274, 224, 224])
+[19:50:40.195] Batch 1: Image shape: torch.Size([1, 38, 224, 224]), Label shape: torch.Size([1, 38, 224, 224])
+[19:50:40.469] Image shape: torch.Size([1, 38, 224, 224]), Label shape: torch.Size([1, 38, 224, 224])
+[19:50:40.469] Processing 38 slices, prediction shape: (38, 224, 224)
+[19:50:41.818] Error processing case case00152: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:50:41.818] Image shape: torch.Size([1, 38, 224, 224]), Label shape: torch.Size([1, 38, 224, 224])
+[19:50:41.824] Batch 2: Image shape: torch.Size([1, 82, 224, 224]), Label shape: torch.Size([1, 82, 224, 224])
+[19:50:42.097] Image shape: torch.Size([1, 82, 224, 224]), Label shape: torch.Size([1, 82, 224, 224])
+[19:50:42.097] Processing 82 slices, prediction shape: (82, 224, 224)
+[19:50:44.955] Error processing case case00187: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:50:44.955] Image shape: torch.Size([1, 82, 224, 224]), Label shape: torch.Size([1, 82, 224, 224])
+[19:50:44.957] Batch 3: Image shape: torch.Size([1, 233, 224, 224]), Label shape: torch.Size([1, 233, 224, 224])
+[19:50:45.225] Image shape: torch.Size([1, 233, 224, 224]), Label shape: torch.Size([1, 233, 224, 224])
+[19:50:45.227] Processing 233 slices, prediction shape: (233, 224, 224)
+[19:50:53.515] Error processing case case00193: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:50:53.515] Image shape: torch.Size([1, 233, 224, 224]), Label shape: torch.Size([1, 233, 224, 224])
+[19:50:53.518] Batch 4: Image shape: torch.Size([1, 60, 224, 224]), Label shape: torch.Size([1, 60, 224, 224])
+[19:50:53.790] Image shape: torch.Size([1, 60, 224, 224]), Label shape: torch.Size([1, 60, 224, 224])
+[19:50:53.791] Processing 60 slices, prediction shape: (60, 224, 224)
+[19:50:55.893] Error processing case case00206: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:50:55.893] Image shape: torch.Size([1, 60, 224, 224]), Label shape: torch.Size([1, 60, 224, 224])
+[19:50:55.894] Batch 5: Image shape: torch.Size([1, 598, 224, 224]), Label shape: torch.Size([1, 598, 224, 224])
+[19:50:55.896] Image shape: torch.Size([1, 598, 224, 224]), Label shape: torch.Size([1, 598, 224, 224])
+[19:50:55.899] Processing 598 slices, prediction shape: (598, 224, 224)
+[19:51:17.621] Error processing case case00246: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:51:17.621] Image shape: torch.Size([1, 598, 224, 224]), Label shape: torch.Size([1, 598, 224, 224])
+[19:51:17.640] Batch 6: Image shape: torch.Size([1, 238, 224, 224]), Label shape: torch.Size([1, 238, 224, 224])
+[19:51:17.641] Image shape: torch.Size([1, 238, 224, 224]), Label shape: torch.Size([1, 238, 224, 224])
+[19:51:17.643] Processing 238 slices, prediction shape: (238, 224, 224)
+[19:51:26.145] Error processing case case00273: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:51:26.145] Image shape: torch.Size([1, 238, 224, 224]), Label shape: torch.Size([1, 238, 224, 224])
+[19:51:26.145] Batch 7: Image shape: torch.Size([1, 125, 224, 224]), Label shape: torch.Size([1, 125, 224, 224])
+[19:51:26.148] Image shape: torch.Size([1, 125, 224, 224]), Label shape: torch.Size([1, 125, 224, 224])
+[19:51:26.149] Processing 125 slices, prediction shape: (125, 224, 224)
+[19:51:30.665] Error processing case case00274: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:51:30.665] Image shape: torch.Size([1, 125, 224, 224]), Label shape: torch.Size([1, 125, 224, 224])
+[19:51:30.674] Batch 8: Image shape: torch.Size([1, 472, 224, 224]), Label shape: torch.Size([1, 472, 224, 224])
+[19:51:30.676] Image shape: torch.Size([1, 472, 224, 224]), Label shape: torch.Size([1, 472, 224, 224])
+[19:51:30.678] Processing 472 slices, prediction shape: (472, 224, 224)
+[19:51:47.991] Error processing case case00412: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:51:47.992] Image shape: torch.Size([1, 472, 224, 224]), Label shape: torch.Size([1, 472, 224, 224])
+[19:51:47.993] Batch 9: Image shape: torch.Size([1, 97, 224, 224]), Label shape: torch.Size([1, 97, 224, 224])
+[19:51:47.995] Image shape: torch.Size([1, 97, 224, 224]), Label shape: torch.Size([1, 97, 224, 224])
+[19:51:47.996] Processing 97 slices, prediction shape: (97, 224, 224)
+[19:51:51.841] Error processing case case00426: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:51:51.841] Image shape: torch.Size([1, 97, 224, 224]), Label shape: torch.Size([1, 97, 224, 224])
+[19:51:51.855] Batch 10: Image shape: torch.Size([1, 198, 224, 224]), Label shape: torch.Size([1, 198, 224, 224])
+[19:51:51.856] Image shape: torch.Size([1, 198, 224, 224]), Label shape: torch.Size([1, 198, 224, 224])
+[19:51:51.858] Processing 198 slices, prediction shape: (198, 224, 224)
+[19:51:59.350] Error processing case case00447: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:51:59.350] Image shape: torch.Size([1, 198, 224, 224]), Label shape: torch.Size([1, 198, 224, 224])
+[19:51:59.350] Batch 11: Image shape: torch.Size([1, 90, 224, 224]), Label shape: torch.Size([1, 90, 224, 224])
+[19:51:59.353] Image shape: torch.Size([1, 90, 224, 224]), Label shape: torch.Size([1, 90, 224, 224])
+[19:51:59.354] Processing 90 slices, prediction shape: (90, 224, 224)
+[19:52:02.939] Error processing case case00450: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:52:02.939] Image shape: torch.Size([1, 90, 224, 224]), Label shape: torch.Size([1, 90, 224, 224])
+[19:52:02.947] Batch 12: Image shape: torch.Size([1, 167, 224, 224]), Label shape: torch.Size([1, 167, 224, 224])
+[19:52:02.949] Image shape: torch.Size([1, 167, 224, 224]), Label shape: torch.Size([1, 167, 224, 224])
+[19:52:02.950] Processing 167 slices, prediction shape: (167, 224, 224)
+[19:52:09.529] Error processing case case00488: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:52:09.529] Image shape: torch.Size([1, 167, 224, 224]), Label shape: torch.Size([1, 167, 224, 224])
+[19:52:09.530] Batch 13: Image shape: torch.Size([1, 99, 224, 224]), Label shape: torch.Size([1, 99, 224, 224])
+[19:52:09.532] Image shape: torch.Size([1, 99, 224, 224]), Label shape: torch.Size([1, 99, 224, 224])
+[19:52:09.533] Processing 99 slices, prediction shape: (99, 224, 224)
+[19:52:13.380] Error processing case case00533: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:52:13.381] Image shape: torch.Size([1, 99, 224, 224]), Label shape: torch.Size([1, 99, 224, 224])
+[19:52:13.388] Batch 14: Image shape: torch.Size([1, 184, 224, 224]), Label shape: torch.Size([1, 184, 224, 224])
+[19:52:13.390] Image shape: torch.Size([1, 184, 224, 224]), Label shape: torch.Size([1, 184, 224, 224])
+[19:52:13.390] Processing 184 slices, prediction shape: (184, 224, 224)
+[19:52:20.306] Error processing case case00568: calculate_metric_percase() takes 2 positional arguments but 3 were given
+[19:52:20.306] Image shape: torch.Size([1, 184, 224, 224]), Label shape: torch.Size([1, 184, 224, 224])

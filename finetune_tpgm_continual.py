@@ -47,7 +47,8 @@ class TPGM(nn.Module):
         self.constraints = []
         self.create_contraint(model)
         self.constraints = nn.ParameterList(self.constraints)
-        self.init = True
+        self.ratio_vals = []  # To store projection ratios
+        self.currently_recording = False  # Flag to control recording
 
     def create_contraint(self, module):
         for name, para in module.named_parameters():
@@ -55,7 +56,8 @@ class TPGM(nn.Module):
                 continue
             if name not in self.exclude_list:
                 self.constraints_name.append(name)
-                temp = nn.Parameter(torch.Tensor([0]), requires_grad=True)
+                # Initialize constraints to 0.1 instead of 0
+                temp = nn.Parameter(torch.Tensor([0.1]), requires_grad=True)
                 self.constraints.append(temp)
 
     def apply_constraints(
@@ -95,24 +97,26 @@ class TPGM(nn.Module):
         t = new.detach() - anchor.detach()
 
         if "l2" in self.norm_mode:
-            norms = torch.norm(t)  # L2 norm
+            # Calculate L2 norm (scalar)
+            norms = torch.norm(t)
         else:
-            norms = torch.sum(torch.abs(t), dim=tuple(range(1,t.dim())), keepdim=True)  # MARS norm
+            # MARS norm - calculate as scalar
+            norms = torch.sum(torch.abs(t))
 
-        constraint = next(constraint_iterator)
+        constraint_param = next(constraint_iterator)
 
-        if self.init:
-            with torch.no_grad():
-                temp = norms.min()/2
-                constraint.copy_(temp)
-        with torch.no_grad():
-            constraint.copy_(self._clip(constraint, norms))
+        # Apply constraints with differentiable operations
+        constraint = torch.clamp(constraint_param, min=1e-8, max=norms.item())
 
-        ratio = self.threshold(constraint / (norms + 1e-8))
+        # Calculate ratio and apply threshold
+        ratio = constraint / (norms + 1e-8)
+        ratio = self.threshold(ratio)
+
+        # Record ratio if we're in recording mode
+        if self.currently_recording:
+            self.ratio_vals.append(ratio.item())
+
         return ratio
-
-    def _clip(self, constraint, norms):
-        return torch.nn.functional.hardtanh(constraint,1e-8,norms.max())
 
     def forward(
         self,
@@ -122,6 +126,10 @@ class TPGM(nn.Module):
         apply=False,
         active_classes=None,
     ):
+        # Reset ratio values and set recording mode
+        self.ratio_vals = []
+        self.currently_recording = not apply  # Only record when not in apply mode
+
         constraint_iterator = iter(self.constraints)
 
         if apply:
@@ -139,6 +147,17 @@ class TPGM(nn.Module):
                 if active_classes is not None:
                     out = out[:, :active_classes, :, :]
             return out
+
+    def get_ratio_stats(self):
+        """Get statistics about the projection ratios"""
+        if not self.ratio_vals:
+            return 0.0, 0.0, 0.0
+
+        min_ratio = min(self.ratio_vals)
+        max_ratio = max(self.ratio_vals)
+        mean_ratio = sum(self.ratio_vals) / len(self.ratio_vals)
+        return min_ratio, max_ratio, mean_ratio
+
 
 class tpgm_trainer(object):
     def __init__(
@@ -170,6 +189,7 @@ class tpgm_trainer(object):
         self.dataset_iterator = iter(self.pgmloader)
         self.ce_loss = ce_loss
         self.dice_loss = dice_loss
+        self.ratio_stats = []  # Store ratio statistics over iterations
 
     def tpgm_iters(self, model, apply=False):
         if not apply:
@@ -186,6 +206,10 @@ class tpgm_trainer(object):
 
                 outputs = self.tpgm(model, self.pre_trained, x=pgm_image, active_classes=self.active_classes)
 
+                # Get and store ratio statistics
+                min_ratio, max_ratio, mean_ratio = self.tpgm.get_ratio_stats()
+                self.ratio_stats.append((min_ratio, max_ratio, mean_ratio))
+
                 loss_ce = self.ce_loss(outputs, pgm_target[:].long())
                 loss_dice = self.dice_loss(outputs, pgm_target, softmax=True)
                 pgm_loss = 0.4 * loss_ce + 0.6 * loss_dice
@@ -197,8 +221,10 @@ class tpgm_trainer(object):
 
                 if (self.count+1) % 20 == 0:
                     print("{}/{} TPGM iterations completed".format(self.count, self.max_iters))
+                    print(f"  Projection ratios - Min: {min_ratio:.4f}, Max: {max_ratio:.4f}, Mean: {mean_ratio:.4f}")
 
         self.tpgm(model, self.pre_trained, apply=True)
+
 
 # Argument parser setup
 parser = argparse.ArgumentParser()

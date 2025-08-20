@@ -1,0 +1,5 @@
+[19:02:58.848] Namespace(volume_path='../data/Synapse/test_vol_h5', dataset='Synapse', num_classes=9, list_dir='./lists/lists_Synapse', output_dir=None, max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=False, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, continual_learning=True, model_stage='stage1', continual_checkpoint='./universal/synapse_to_kits23_tpgm/final_continual_model.pth', test_all_datasets=True, test_datasets=['Synapse'], continual_learning_orig=False, pretrained_ckpt=None, old_num_classes=9, old_dataset='Synapse')
+[19:02:58.848] ==================================================
+[19:02:58.848] CONTINUAL LEARNING TESTING MODE
+[19:02:58.848] Model Stage: stage1
+[19:02:58.848] Model configuration: {'num_classes': 12, 'datasets': ['Synapse', 'kits23'], 'class_mapping': {'Synapse': {'offset': 0, 'classes': 9}, 'kits23': {'offset': 9, 'classes': 4}}}

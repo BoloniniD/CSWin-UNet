@@ -26,14 +26,9 @@ def trainer_synapse(args, model, snapshot_path):
     base_lr = args.base_lr
     num_classes = args.num_classes
     batch_size = args.batch_size * args.n_gpu
-    if args.dataset == "Synapse":
-        db_train = Synapse_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
-                                        transform=transforms.Compose(
-                                            [RandomGenerator(output_size=[args.img_size, args.img_size])]))
-    if args.dataset == "kits23":
-        db_train = Synapse_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
-                                        transform=transforms.Compose(
-                                            [RandomGenerator(output_size=[args.img_size, args.img_size])]), is_kits=True)
+    db_train = Synapse_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
+                                    transform=transforms.Compose(
+                                        [RandomGenerator(output_size=[args.img_size, args.img_size])]))
     print("The length of train set is: {}".format(len(db_train)))
 
 

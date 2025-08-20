@@ -24,7 +24,7 @@ import copy
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--root_path', type=str,
-                    default='../data/kits23/train_npz', help='root dir for data')
+                    default='./datasets/kits23/train_npz', help='root dir for data')
 parser.add_argument('--dataset', type=str,
                     default='kits23', help='experiment_name')
 parser.add_argument('--list_dir', type=str,

@@ -15,6 +15,17 @@ from networks.vision_transformer import CSwinUnet as ViT_seg
 from config import get_config
 from thop import profile, clever_format
 
+# Define model wrapper for slicing outputs
+class OutputSliceWrapper(nn.Module):
+    def __init__(self, model, num_classes):
+        super().__init__()
+        self.model = model
+        self.num_classes = num_classes
+
+    def forward(self, x):
+        output = self.model(x)
+        return output[:, :self.num_classes, :, :]
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--volume_path', type=str,
                     default='../data/Synapse/test_vol_h5', help='root dir for validation volume data')
@@ -22,6 +33,10 @@ parser.add_argument('--dataset', type=str,
                     default='Synapse', help='experiment_name')
 parser.add_argument('--num_classes', type=int,
                     default=9, help='output channel of network')
+parser.add_argument('--model_num_classes', type=int,
+                    default=9, help='number of classes in original model')
+parser.add_argument('--num_classes_new_task', type=int, default=4,
+                    help='Number of classes in the continual learning task (e.g., 4 for kits23)')
 parser.add_argument('--list_dir', type=str,
                     default='./lists/lists_Synapse', help='list dir')
 parser.add_argument('--output_dir', type=str, help='output dir')
@@ -57,34 +72,10 @@ parser.add_argument('--tag', help='tag of experiment')
 parser.add_argument('--eval', action='store_true', help='Perform evaluation only')
 parser.add_argument('--throughput', action='store_true', help='Test throughput only')
 
-# Continual learning arguments
-parser.add_argument('--continual', action='store_true', help='whether testing a continual learning model')
-parser.add_argument('--num_classes_old', type=int, default=9, help='number of classes in the old model')
-parser.add_argument('--num_classes_new', type=int, default=4, help='number of classes in the new dataset')
-
 args = parser.parse_args()
 if args.dataset == "Synapse":
     args.volume_path = os.path.join(args.volume_path, "test_vol_h5")
 config = get_config(args)
-
-
-class ContinualTestWrapper(nn.Module):
-    """Wrapper for testing continual learning models"""
-    def __init__(self, model, num_classes_old, num_classes_new):
-        super().__init__()
-        self.model = model
-        self.num_classes_old = num_classes_old
-        self.num_classes_new = num_classes_new
-        self.total_classes = num_classes_old + num_classes_new - 1
-
-        # Background remains at index 0
-        # New classes start at old_classes index (background is shared)
-        self.new_class_indices = [0] + list(range(num_classes_old, self.total_classes))
-
-    def forward(self, x):
-        output = self.model(x)
-        # Select only background and new classes
-        return output[:, self.new_class_indices]
 
 
 def inference(args, model, test_save_path=None):
@@ -104,12 +95,22 @@ def inference(args, model, test_save_path=None):
         metric_list += np.array(metric_i)
         logging.info('idx %d case %s mean_dice %f mean_hd95 %f' % (i_batch, case_name, np.mean(metric_i, axis=0)[0], np.mean(metric_i, axis=0)[1]))
     metric_list = metric_list / len(db_test)
-    for i in range(1, args.num_classes):
+    for i in range(1, args.num_classes+1):
         logging.info('Mean class %d mean_dice %f mean_hd95 %f' % (i, metric_list[i-1][0], metric_list[i-1][1]))
     performance = np.mean(metric_list, axis=0)[0]
     mean_hd95 = np.mean(metric_list, axis=0)[1]
     logging.info('Testing performance in best val model: mean_dice : %f mean_hd95 : %f' % (performance, mean_hd95))
     return "Testing Finished!"
+
+def remove_base_model_prefix(state_dict):
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        if key.startswith('base_model.'):
+            new_key = key.replace('base_model.', '', 1)
+            new_state_dict[new_key] = value
+        else:
+            new_state_dict[key] = value
+    return new_state_dict
 
 
 if __name__ == "__main__":
@@ -149,45 +150,46 @@ if __name__ == "__main__":
     args.z_spacing = dataset_config[dataset_name]['z_spacing']
     args.is_pretrain = True
 
-    # Handle continual learning model
-    if args.continual:
-        total_classes = args.num_classes_old + args.num_classes_new - 1
-        net = ViT_seg(config, img_size=args.img_size, num_classes=total_classes).cuda()
-    else:
-        net = ViT_seg(config, img_size=args.img_size, num_classes=args.num_classes).cuda()
+    # Calculate total classes in the continual learning model
+    TOTAL_MODEL_CLASSES = args.model_num_classes + args.num_classes_new_task - 1
+    print(f"Initializing model with {TOTAL_MODEL_CLASSES} classes to match checkpoint")
 
-    snapshot = os.path.join(args.output_dir, 'best_model.pth')
+    # Initialize model with full architecture
+    net = ViT_seg(config, img_size=args.img_size, num_classes=TOTAL_MODEL_CLASSES).cuda()
+
+    # Find the best model checkpoint
+    snapshot = os.path.join(args.output_dir, 'finetuned_final.pth')
     if not os.path.exists(snapshot):
-        # Try to find the latest epoch checkpoint
-        for epoch in range(args.max_epochs-1, 0, -1):
-            candidate = os.path.join(args.output_dir, f'continual_epoch_{epoch}.pth')
-            if os.path.exists(candidate):
-                snapshot = candidate
-                break
+        # Try to find the last epoch checkpoint
+        checkpoint_files = [f for f in os.listdir(args.output_dir) if f.startswith('surgical_tpgm_continual_epoch_')]
+        if checkpoint_files:
+            # Find the highest epoch number
+            epochs = [int(f.split('_')[-1].split('.')[0]) for f in checkpoint_files]
+            max_epoch = max(epochs)
+            snapshot = os.path.join(args.output_dir, f'surgical_tpgm_continual_epoch_{max_epoch}.pth')
         else:
-            raise FileNotFoundError(f"No model found in {args.output_dir}")
+            raise FileNotFoundError(f"No suitable checkpoint found in {args.output_dir}")
 
     # Load model weights
-    state_dict = torch.load(snapshot, map_location='cpu')
+    print(f"Loading model weights from: {snapshot}")
+    state_dict = torch.load(snapshot, map_location='cuda:0')
+    state_dict = remove_base_model_prefix(state_dict=state_dict)
 
-    # Handle DataParallel and module prefix
-    state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
-    net.load_state_dict(state_dict)
-    print(f"Loaded model from {snapshot}")
+    # Load state dict with strict=True to ensure architecture matches
+    net.load_state_dict(state_dict, strict=True)
+    print(f"Successfully loaded model from {snapshot}")
 
-    # Wrap model for continual learning if needed
-    if args.continual:
-        print(f"Wrapping model for continual learning (old: {args.num_classes_old}, new: {args.num_classes_new})")
-        net = ContinualTestWrapper(net, args.num_classes_old, args.num_classes_new)
-        # Update num_classes to match the wrapper's output
-        args.num_classes = args.num_classes_new
+    # Wrap model to output only active classes for current dataset
+    print(f"Wrapping model to evaluate on {args.num_classes} classes for {args.dataset}")
+    net = OutputSliceWrapper(net, args.num_classes)
 
     log_folder = './test_log/test_log_'
     os.makedirs(log_folder, exist_ok=True)
-    logging.basicConfig(filename=log_folder + args.dataset + "_.txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
+    logging.basicConfig(filename=os.path.join(args.output_dir, "test_log.txt"), level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
     logging.info(str(args))
-    logging.info(snapshot)
+    logging.info(f"Testing model: {snapshot}")
+    logging.info(f"Model has {TOTAL_MODEL_CLASSES} total classes, testing {args.num_classes} classes for {args.dataset}")
 
     if args.is_savenii:
         args.test_save_dir = os.path.join(args.output_dir, "predictions")
@@ -196,11 +198,16 @@ if __name__ == "__main__":
     else:
         test_save_path = None
 
-    inference(args, net, test_save_path)
-
-    # FLOPs calculation
+    # Calculate FLOPs and params on original model (without wrapper)
+    net_without_wrapper = net.model
+    net_without_wrapper.eval()
     dummy_input = torch.randn(1, 3, args.img_size, args.img_size).cuda()
-    flops, params = profile(net, inputs=(dummy_input,))
+    flops, params = profile(net_without_wrapper, inputs=(dummy_input,))
     flops, params = clever_format([flops, params], "%.3f")
+    logging.info(f'FLOPs: {flops}')
+    logging.info(f'Params: {params}')
     print('FLOPs:', flops)
     print('Params:', params)
+
+    # Run inference
+    inference(args, net, test_save_path)

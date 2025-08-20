@@ -1,0 +1,108 @@
+[15:08:52.350] Loaded model from ./finetune_continual_lits17\continual_epoch_29.pth
+[15:08:52.350] --- Testing on dataset: Synapse ---
+[15:08:52.351] Args: Namespace(volume_path='./datasets/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_continual_lits17', img_size=224, is_savenii=True, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', total_num_classes=16, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False, num_classes=9, Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1, is_kits=False, is_lits=False)
+[15:08:52.352] Testing on Synapse: 11 volumes.
+[15:09:52.962] idx 0 case case0008 mean_dice 0.000098 mean_hd95 190.021991
+[15:10:21.693] idx 1 case case0022 mean_dice 0.002405 mean_hd95 157.069060
+[15:10:54.270] idx 2 case case0038 mean_dice 0.003799 mean_hd95 151.005202
+[15:12:00.501] idx 3 case case0036 mean_dice 0.002353 mean_hd95 164.491090
+[15:12:48.713] idx 4 case case0032 mean_dice 0.001253 mean_hd95 156.601887
+[15:13:40.833] idx 5 case case0002 mean_dice 0.000632 mean_hd95 179.965813
+[15:14:12.929] idx 6 case case0029 mean_dice 0.001362 mean_hd95 154.420366
+[15:15:17.311] idx 7 case case0003 mean_dice 0.000594 mean_hd95 155.081435
+[15:16:10.282] idx 8 case case0004 mean_dice 0.000422 mean_hd95 180.555328
+[15:16:37.623] idx 9 case case0025 mean_dice 0.000835 mean_hd95 154.941844
+[15:17:06.359] idx 10 case case0035 mean_dice 0.125996 mean_hd95 121.192452
+[15:17:06.851] Mean class 1 mean_dice 0.000000 mean_hd95 0.000000
+[15:17:06.851] Mean class 2 mean_dice 0.091421 mean_hd95 318.511711
+[15:17:06.851] Mean class 3 mean_dice 0.000000 mean_hd95 295.990971
+[15:17:06.851] Mean class 4 mean_dice 0.000000 mean_hd95 66.348252
+[15:17:06.851] Mean class 5 mean_dice 0.000219 mean_hd95 64.534838
+[15:17:06.851] Mean class 6 mean_dice 0.000736 mean_hd95 264.637551
+[15:17:06.851] Mean class 7 mean_dice 0.000000 mean_hd95 0.000000
+[15:17:06.852] Mean class 8 mean_dice 0.009259 mean_hd95 273.865017
+[15:17:06.852] Testing performance for dataset Synapse: mean_dice : 0.012704 mean_hd95 : 160.486043
+[15:58:37.626] Loaded continual learning model from ./finetune_surgical_continual_kits23_lits17\continual_epoch_29.pth
+[15:58:37.627] --- Testing on dataset: Synapse ---
+[15:58:37.627] Args: Namespace(volume_path='../data/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_surgical_continual_kits23_lits17', img_size=224, is_savenii=True, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', is_continual_model=True, total_num_classes=14, num_classes_old=9, num_classes_kits=4, num_classes_lits=3, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False)
+[15:58:37.629] Testing on Synapse: 11 volumes.
+[15:59:24.928] Loaded continual learning model from ./finetune_surgical_continual_kits23_lits17\continual_epoch_29.pth
+[15:59:24.929] --- Testing on dataset: Synapse ---
+[15:59:24.929] Args: Namespace(volume_path='../dataset/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_surgical_continual_kits23_lits17', img_size=224, is_savenii=True, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', is_continual_model=True, total_num_classes=14, num_classes_old=9, num_classes_kits=4, num_classes_lits=3, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False)
+[15:59:24.929] Testing on Synapse: 11 volumes.
+[16:01:18.368] Loaded continual learning model from ./finetune_surgical_continual_kits23_lits17\continual_epoch_29.pth
+[16:01:18.369] --- Testing on dataset: Synapse ---
+[16:01:18.369] Args: Namespace(volume_path='./dataset/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_surgical_continual_kits23_lits17', img_size=224, is_savenii=True, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', is_continual_model=True, total_num_classes=14, num_classes_old=9, num_classes_kits=4, num_classes_lits=3, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False)
+[16:01:18.369] Testing on Synapse: 11 volumes.
+[16:02:17.671] Loaded continual learning model from ./finetune_surgical_continual_kits23_lits17\continual_epoch_29.pth
+[16:02:17.671] --- Testing on dataset: Synapse ---
+[16:02:17.671] Args: Namespace(volume_path='./datasets/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_surgical_continual_kits23_lits17', img_size=224, is_savenii=True, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', is_continual_model=True, total_num_classes=14, num_classes_old=9, num_classes_kits=4, num_classes_lits=3, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False)
+[16:02:17.672] Testing on Synapse: 11 volumes.
+[16:03:31.652] idx 0 case case0008 mean_dice 0.681773 mean_hd95 17.164029
+[16:04:13.004] idx 1 case case0022 mean_dice 0.854550 mean_hd95 43.525889
+[16:04:54.840] idx 2 case case0038 mean_dice 0.775155 mean_hd95 39.409682
+[16:06:26.919] idx 3 case case0036 mean_dice 0.829744 mean_hd95 17.005076
+[16:07:35.280] idx 4 case case0032 mean_dice 0.883144 mean_hd95 22.282464
+[16:08:39.691] idx 5 case case0002 mean_dice 0.862929 mean_hd95 7.249232
+[16:09:25.002] idx 6 case case0029 mean_dice 0.690066 mean_hd95 43.564329
+[16:10:56.346] idx 7 case case0003 mean_dice 0.697386 mean_hd95 95.148009
+[16:12:01.922] idx 8 case case0004 mean_dice 0.735330 mean_hd95 12.657014
+[16:12:41.466] idx 9 case case0025 mean_dice 0.859360 mean_hd95 3.364902
+[16:13:19.815] idx 10 case case0035 mean_dice 0.889428 mean_hd95 3.612325
+[16:13:20.403] Mean class 1 mean_dice 0.856035 mean_hd95 12.178766
+[16:13:20.403] Mean class 2 mean_dice 0.630139 mean_hd95 28.418148
+[16:13:20.404] Mean class 3 mean_dice 0.802277 mean_hd95 55.811638
+[16:13:20.404] Mean class 4 mean_dice 0.742963 mean_hd95 54.136704
+[16:13:20.404] Mean class 5 mean_dice 0.941567 mean_hd95 29.189389
+[16:13:20.404] Mean class 6 mean_dice 0.660996 mean_hd95 13.339311
+[16:13:20.404] Mean class 7 mean_dice 0.916193 mean_hd95 9.764253
+[16:13:20.404] Mean class 8 mean_dice 0.819914 mean_hd95 18.967573
+[16:13:20.404] Testing performance for dataset Synapse: mean_dice : 0.796260 mean_hd95 : 27.725723
+[12:22:55.619] Loaded model from ./finetune_tpgm_lits17\continual_epoch_29.pth
+[12:22:55.620] --- Testing on dataset: Synapse ---
+[12:22:55.620] Args: Namespace(volume_path='./datasets/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_tpgm_lits17', img_size=224, is_savenii=False, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', is_continual_model=True, model_num_classes=9, num_classes_synapse=9, num_classes_kits=4, num_classes_lits=3, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False)
+[12:22:55.622] Testing on Synapse: 11 volumes.
+[12:23:34.268] idx 0 case case0008 mean_dice 0.128637 mean_hd95 34.211497
+[12:23:54.913] idx 1 case case0022 mean_dice 0.163349 mean_hd95 44.805231
+[12:24:09.125] idx 2 case case0038 mean_dice 0.098109 mean_hd95 20.402860
+[12:24:37.130] idx 3 case case0036 mean_dice 0.071744 mean_hd95 24.254717
+[12:25:04.163] idx 4 case case0032 mean_dice 0.107888 mean_hd95 24.975490
+[12:25:29.654] idx 5 case case0002 mean_dice 0.111440 mean_hd95 22.792843
+[12:25:52.275] idx 6 case case0029 mean_dice 0.111968 mean_hd95 33.461271
+[12:26:37.088] idx 7 case case0003 mean_dice 0.081531 mean_hd95 48.956050
+[12:27:02.967] idx 8 case case0004 mean_dice 0.100368 mean_hd95 22.023052
+[12:27:21.987] idx 9 case case0025 mean_dice 0.093413 mean_hd95 46.139343
+[12:27:34.732] idx 10 case case0035 mean_dice 0.225601 mean_hd95 17.255161
+[12:27:35.178] Mean class 1 mean_dice 0.000000 mean_hd95 136.637930
+[12:27:35.178] Mean class 2 mean_dice 0.178331 mean_hd95 26.119301
+[12:27:35.178] Mean class 3 mean_dice 0.000000 mean_hd95 0.000000
+[12:27:35.178] Mean class 4 mean_dice 0.000000 mean_hd95 53.839018
+[12:27:35.178] Mean class 5 mean_dice 0.762794 mean_hd95 30.151035
+[12:27:35.178] Mean class 6 mean_dice 0.000000 mean_hd95 0.000000
+[12:27:35.178] Mean class 7 mean_dice 0.000000 mean_hd95 0.000000
+[12:27:35.178] Mean class 8 mean_dice 0.000000 mean_hd95 0.000000
+[12:27:35.178] Testing performance for dataset Synapse: mean_dice : 0.117641 mean_hd95 : 30.843410
+[12:33:02.917] Loaded model from ./finetune_tpgm_surgical_lits17\finetuned_final.pth
+[12:33:02.917] --- Testing on dataset: Synapse ---
+[12:33:02.917] Args: Namespace(volume_path='./datasets/Synapse/test_vol_h5', dataset='Synapse', list_dir='./lists/lists_Synapse', output_dir='./finetune_tpgm_surgical_lits17', img_size=224, is_savenii=False, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', is_continual_model=True, model_num_classes=9, num_classes_synapse=9, num_classes_kits=4, num_classes_lits=3, model_name='finetuned_final.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False)
+[12:33:02.919] Testing on Synapse: 11 volumes.
+[12:33:54.732] idx 0 case case0008 mean_dice 0.021363 mean_hd95 106.293552
+[12:34:19.130] idx 1 case case0022 mean_dice 0.023721 mean_hd95 89.756759
+[12:34:56.311] idx 2 case case0038 mean_dice 0.023052 mean_hd95 184.143302
+[12:36:02.269] idx 3 case case0036 mean_dice 0.016668 mean_hd95 140.104141
+[12:36:44.210] idx 4 case case0032 mean_dice 0.021235 mean_hd95 81.477008
+[12:37:22.587] idx 5 case case0002 mean_dice 0.027308 mean_hd95 61.375758
+[12:37:41.316] idx 6 case case0029 mean_dice 0.025448 mean_hd95 42.005820
+[12:38:45.361] idx 7 case case0003 mean_dice 0.014651 mean_hd95 116.117781
+[12:39:32.075] idx 8 case case0004 mean_dice 0.010600 mean_hd95 142.839571
+[12:39:55.066] idx 9 case case0025 mean_dice 0.023597 mean_hd95 71.447420
+[12:40:16.019] idx 10 case case0035 mean_dice 0.152117 mean_hd95 52.177357
+[12:40:16.491] Mean class 1 mean_dice 0.000050 mean_hd95 175.139607
+[12:40:16.491] Mean class 2 mean_dice 0.098209 mean_hd95 133.885944
+[12:40:16.491] Mean class 3 mean_dice 0.000000 mean_hd95 94.984195
+[12:40:16.491] Mean class 4 mean_dice 0.000009 mean_hd95 122.242139
+[12:40:16.492] Mean class 5 mean_dice 0.163375 mean_hd95 90.796388
+[12:40:16.492] Mean class 6 mean_dice 0.000000 mean_hd95 147.386052
+[12:40:16.492] Mean class 7 mean_dice 0.000000 mean_hd95 0.000000
+[12:40:16.492] Mean class 8 mean_dice 0.000000 mean_hd95 26.648198
+[12:40:16.492] Testing performance for dataset Synapse: mean_dice : 0.032705 mean_hd95 : 98.885315

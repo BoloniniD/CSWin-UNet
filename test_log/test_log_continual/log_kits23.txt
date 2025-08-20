@@ -1,0 +1,206 @@
+[17:35:08.576] Loaded model from ./finetune_continual_kits23\continual_epoch_29.pth
+[17:35:08.576] Args: Namespace(volume_path='./datasets/kits23/test_vol_h5', dataset='kits23', list_dir='./lists/kits23', output_dir='./finetune_continual_kits23', img_size=224, is_savenii=True, test_save_dir='../predictions', seed=1234, cfg='configs/pretrain_kits23.yaml', num_classes_new=4, num_classes_old=9, model_name='continual_epoch_29.pth', max_epochs=150, batch_size=24, deterministic=1, opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=1, use_checkpoint=False, amp_opt_level='O1', tag='test', eval=False, throughput=False, num_classes=4, Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1)
+[17:35:08.576] Testing model: continual_epoch_29.pth
+[17:35:08.576] Found 15 volumes for testing.
+[17:35:08.576] 15 test iterations per epoch
+[17:35:25.238] idx 0 case case00142 mean_dice 0.303530 mean_hd95 32.271602
+[17:35:27.041] idx 1 case case00152 mean_dice 0.307307 mean_hd95 12.751593
+[17:35:30.839] idx 2 case case00187 mean_dice 0.485324 mean_hd95 5.236068
+[17:35:41.659] idx 3 case case00193 mean_dice 0.341232 mean_hd95 29.080805
+[17:35:44.549] idx 4 case case00206 mean_dice 0.343278 mean_hd95 6.196509
+[17:36:15.823] idx 5 case case00246 mean_dice 0.578015 mean_hd95 5.052105
+[17:36:26.935] idx 6 case case00273 mean_dice 0.295072 mean_hd95 45.355033
+[17:36:32.640] idx 7 case case00274 mean_dice 0.546451 mean_hd95 7.685157
+[17:36:56.691] idx 8 case case00412 mean_dice 0.536960 mean_hd95 4.501682
+[17:37:01.064] idx 9 case case00426 mean_dice 0.525853 mean_hd95 6.999974
+[17:37:08.993] idx 10 case case00447 mean_dice 0.314742 mean_hd95 0.942809
+[17:37:13.275] idx 11 case case00450 mean_dice 0.583347 mean_hd95 3.732051
+[17:37:20.902] idx 12 case case00488 mean_dice 0.428925 mean_hd95 2.913886
+[17:37:25.566] idx 13 case case00533 mean_dice 0.589788 mean_hd95 4.711321
+[17:37:34.096] idx 14 case case00568 mean_dice 0.431225 mean_hd95 10.406956
+[17:37:34.615] Mean class 1 mean_dice 0.867579 mean_hd95 8.125919
+[17:37:34.615] Mean class 2 mean_dice 0.454631 mean_hd95 27.441591
+[17:37:34.615] Mean class 3 mean_dice 0.000000 mean_hd95 0.000000
+[17:37:34.615] Testing performance for dataset kits23: mean_dice : 0.440737 mean_hd95 : 11.855837
+[17:37:34.694] Full Model FLOPs: 4.736G
+[17:37:34.695] Full Model Params: 23.569M
+[20:11:57.816] === Model Checkpoint Information ===
+[20:11:57.817] Checkpoint: ./universal/synapse_to_kits23_tpgm\final_continual_model.pth
+[20:11:57.817] Epoch: 4
+[20:11:57.817] Old classes: 9
+[20:11:57.817] New classes: 4
+[20:11:57.817] Total classes: 12
+[20:11:57.817] Task offset: 9
+[20:11:57.817] Dataset fraction used: 1.0
+[20:11:57.817] === Testing Configuration ===
+[20:11:57.818] Dataset: kits23
+[20:11:57.818] Task classes: 4
+[20:11:57.818] Is continual model: True
+[20:11:58.326] Loaded continual model with 12 total classes
+[20:11:58.328] --- Testing on dataset: kits23 ---
+[20:11:58.328] Saving predictions to: ./universal/synapse_to_kits23_tpgm\predictions_kits23
+[20:11:58.329] Testing on kits23: 15 volumes.
+[20:12:25.767] idx 0 case case00142 mean_dice 0.000000 mean_hd95 0.000000
+[20:12:30.296] idx 1 case case00152 mean_dice 0.000000 mean_hd95 0.000000
+[20:12:36.820] idx 2 case case00187 mean_dice 0.000000 mean_hd95 0.000000
+[20:12:51.130] idx 3 case case00193 mean_dice 0.000000 mean_hd95 0.000000
+[20:12:53.373] idx 4 case case00206 mean_dice 0.000000 mean_hd95 0.000000
+[20:13:25.039] idx 5 case case00246 mean_dice 0.000000 mean_hd95 0.000000
+[20:13:42.858] idx 6 case case00273 mean_dice 0.000000 mean_hd95 0.000000
+[20:13:55.050] idx 7 case case00274 mean_dice 0.000000 mean_hd95 0.000000
+[20:14:30.904] idx 8 case case00412 mean_dice 0.000000 mean_hd95 0.000000
+[20:14:37.819] idx 9 case case00426 mean_dice 0.000000 mean_hd95 0.000000
+[20:14:51.759] idx 10 case case00447 mean_dice 0.000000 mean_hd95 0.000000
+[20:14:58.447] idx 11 case case00450 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:12.900] idx 12 case case00488 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:24.508] idx 13 case case00533 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:39.932] idx 14 case case00568 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:40.457] Mean class 1 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:40.457] Mean class 2 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:40.457] Mean class 3 mean_dice 0.000000 mean_hd95 0.000000
+[20:15:40.457] Testing performance for dataset kits23: mean_dice : 0.000000 mean_hd95 : 0.000000
+[20:15:40.462] === FINAL RESULTS ===
+[20:15:40.462] Dataset: kits23
+[20:15:40.462] Mean Dice: 0.0000
+[20:15:40.462] Mean HD95: 0.0000
+[20:15:40.462] Testing completed successfully!
+[20:47:14.068] === Model Checkpoint Information ===
+[20:47:14.068] Checkpoint: ./universal/synapse_to_kits23_tpgm\final_continual_model.pth
+[20:47:14.068] Epoch: 4
+[20:47:14.068] Old classes: 9
+[20:47:14.068] New classes: 4
+[20:47:14.069] Total classes: 12
+[20:47:14.069] Task offset: 9
+[20:47:14.069] Dataset fraction used: 1.0
+[20:47:14.069] === Testing Configuration ===
+[20:47:14.069] Dataset: kits23
+[20:47:14.069] Task classes: 4
+[20:47:14.069] Task type: new
+[20:47:14.069] Is continual model: True
+[20:47:14.508] Loaded continual model with 12 total classes
+[20:47:14.508] --- Testing on dataset: kits23 ---
+[20:47:14.508] Saving predictions to: ./universal/synapse_to_kits23_tpgm\predictions_kits23
+[20:47:14.509] Testing on kits23: 15 volumes.
+[20:47:28.499] idx 0 case case00142 mean_dice 0.000000 mean_hd95 0.000000
+[20:47:29.916] idx 1 case case00152 mean_dice 0.000000 mean_hd95 0.000000
+[20:47:33.002] idx 2 case case00187 mean_dice 0.000000 mean_hd95 0.000000
+[20:47:45.030] idx 3 case case00193 mean_dice 0.000000 mean_hd95 0.000000
+[20:47:48.713] idx 4 case case00206 mean_dice 0.000000 mean_hd95 0.000000
+[20:48:12.626] idx 5 case case00246 mean_dice 0.000000 mean_hd95 0.000000
+[20:48:23.136] idx 6 case case00273 mean_dice 0.000000 mean_hd95 0.000000
+[20:48:28.303] idx 7 case case00274 mean_dice 0.000000 mean_hd95 0.000000
+[20:48:49.780] idx 8 case case00412 mean_dice 0.000000 mean_hd95 0.000000
+[20:48:54.276] idx 9 case case00426 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:04.321] idx 10 case case00447 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:08.808] idx 11 case case00450 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:19.531] idx 12 case case00488 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:28.231] idx 13 case case00533 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:39.762] idx 14 case case00568 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:40.270] Mean class 1 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:40.270] Mean class 2 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:40.270] Mean class 3 mean_dice 0.000000 mean_hd95 0.000000
+[20:49:40.270] Testing performance for dataset kits23: mean_dice : 0.000000 mean_hd95 : 0.000000
+[20:49:40.275] === FINAL RESULTS ===
+[20:49:40.275] Dataset: kits23
+[20:49:40.275] Mean Dice: 0.0000
+[20:49:40.275] Mean HD95: 0.0000
+[20:49:40.275] Testing completed successfully!
+[22:08:05.423] === Model Checkpoint Information ===
+[22:08:05.423] Checkpoint: ./universal/synapse_to_kits23_tpgm\final_continual_model.pth
+[22:08:05.423] Epoch: 4
+[22:08:05.423] Old classes: 9
+[22:08:05.423] New classes: 4
+[22:08:05.424] Total classes: 12
+[22:08:05.424] Task offset: 9
+[22:08:05.424] Dataset fraction used: 1.0
+[22:08:05.424] === Testing Configuration ===
+[22:08:05.424] Dataset: kits23
+[22:08:05.424] Task classes: 4
+[22:08:05.424] Task type: new
+[22:08:05.424] Is continual model: True
+[22:08:05.832] Loaded continual model with 12 total classes
+[22:08:05.832] --- Testing on dataset: kits23 ---
+[22:08:05.833] Saving predictions to: ./universal/synapse_to_kits23_tpgm\predictions_kits23
+[22:08:05.833] Testing on kits23: 15 volumes.
+[22:08:18.525] idx 0 case case00142 mean_dice 0.000000 mean_hd95 0.000000
+[22:08:19.837] idx 1 case case00152 mean_dice 0.000000 mean_hd95 0.000000
+[22:08:22.655] idx 2 case case00187 mean_dice 0.000000 mean_hd95 0.000000
+[22:08:30.450] idx 3 case case00193 mean_dice 0.000000 mean_hd95 0.000000
+[22:08:32.468] idx 4 case case00206 mean_dice 0.000000 mean_hd95 0.000000
+[22:08:54.302] idx 5 case case00246 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:03.374] idx 6 case case00273 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:07.992] idx 7 case case00274 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:26.932] idx 8 case case00412 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:30.692] idx 9 case case00426 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:39.659] idx 10 case case00447 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:43.916] idx 11 case case00450 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:51.701] idx 12 case case00488 mean_dice 0.000000 mean_hd95 0.000000
+[22:09:55.777] idx 13 case case00533 mean_dice 0.000000 mean_hd95 0.000000
+[22:10:03.684] idx 14 case case00568 mean_dice 0.000000 mean_hd95 0.000000
+[22:10:04.166] Mean class 1 mean_dice 0.000000 mean_hd95 0.000000
+[22:10:04.166] Mean class 2 mean_dice 0.000000 mean_hd95 0.000000
+[22:10:04.167] Mean class 3 mean_dice 0.000000 mean_hd95 0.000000
+[22:10:04.167] Testing performance for dataset kits23: mean_dice : 0.000000 mean_hd95 : 0.000000
+[22:10:04.171] === FINAL RESULTS ===
+[22:10:04.171] Dataset: kits23
+[22:10:04.171] Mean Dice: 0.0000
+[22:10:04.171] Mean HD95: 0.0000
+[22:10:04.171] Testing completed successfully!
+[23:33:12.665] === Model Checkpoint Information ===
+[23:33:12.665] Checkpoint: ./universal/synapse_to_kits23_tpgm\final_continual_model.pth
+[23:33:12.665] Epoch: 4
+[23:33:12.665] Old classes: 9
+[23:33:12.665] New classes: 4
+[23:33:12.665] Total classes: 12
+[23:33:12.665] Task offset: 9
+[23:33:12.665] Dataset fraction used: 0.25
+[23:33:12.665] === Testing Configuration ===
+[23:33:12.665] Dataset: kits23
+[23:33:12.666] Task classes: 4
+[23:33:12.666] Task type: new
+[23:33:12.666] Is continual model: True
+[23:33:13.048] Loaded continual model with 12 total classes
+[23:33:13.049] --- Testing on dataset: kits23 ---
+[23:33:13.049] Saving predictions to: ./universal/synapse_to_kits23_tpgm\predictions_kits23
+[23:33:13.050] Testing on kits23: 15 volumes.
+[23:33:27.963] === Model Checkpoint Information ===
+[23:33:27.963] Checkpoint: ./universal/synapse_to_kits23_tpgm\epoch_4_continual.pth
+[23:33:27.963] Epoch: 4
+[23:33:27.963] Old classes: 9
+[23:33:27.963] New classes: 4
+[23:33:27.963] Total classes: 12
+[23:33:27.963] Task offset: 9
+[23:33:27.963] Dataset fraction used: 0.25
+[23:33:27.963] === Testing Configuration ===
+[23:33:27.963] Dataset: kits23
+[23:33:27.963] Task classes: 4
+[23:33:27.963] Task type: new
+[23:33:27.963] Is continual model: True
+[23:33:28.309] Loaded continual model with 12 total classes
+[23:33:28.309] --- Testing on dataset: kits23 ---
+[23:33:28.309] Saving predictions to: ./universal/synapse_to_kits23_tpgm\predictions_kits23
+[23:33:28.310] Testing on kits23: 15 volumes.
+[23:33:40.545] idx 0 case case00142 mean_dice 0.000000 mean_hd95 0.000000
+[23:33:41.775] idx 1 case case00152 mean_dice 0.000000 mean_hd95 0.000000
+[23:33:44.422] idx 2 case case00187 mean_dice 0.000000 mean_hd95 0.000000
+[23:33:51.681] idx 3 case case00193 mean_dice 0.000000 mean_hd95 0.000000
+[23:33:53.596] idx 4 case case00206 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:13.738] idx 5 case case00246 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:21.523] idx 6 case case00273 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:25.688] idx 7 case case00274 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:40.504] idx 8 case case00412 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:43.705] idx 9 case case00426 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:50.423] idx 10 case case00447 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:53.645] idx 11 case case00450 mean_dice 0.000000 mean_hd95 0.000000
+[23:34:59.278] idx 12 case case00488 mean_dice 0.000000 mean_hd95 0.000000
+[23:35:02.594] idx 13 case case00533 mean_dice 0.000000 mean_hd95 0.000000
+[23:35:08.674] idx 14 case case00568 mean_dice 0.000000 mean_hd95 0.000000
+[23:35:09.096] Mean class 1 mean_dice 0.000000 mean_hd95 0.000000
+[23:35:09.097] Mean class 2 mean_dice 0.000000 mean_hd95 0.000000
+[23:35:09.097] Mean class 3 mean_dice 0.000000 mean_hd95 0.000000
+[23:35:09.097] Testing performance for dataset kits23: mean_dice : 0.000000 mean_hd95 : 0.000000
+[23:35:09.102] === FINAL RESULTS ===
+[23:35:09.102] Dataset: kits23
+[23:35:09.102] Mean Dice: 0.0000
+[23:35:09.102] Mean HD95: 0.0000
+[23:35:09.103] Testing completed successfully!

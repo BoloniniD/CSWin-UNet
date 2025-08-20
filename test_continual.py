@@ -1,6 +1,9 @@
 import argparse
 import logging
 import os
+
+#os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 import random
 import sys
 import numpy as np
@@ -148,11 +151,13 @@ if __name__ == "__main__":
     args.z_spacing = dataset_config[dataset_name]['z_spacing']
     args.is_pretrain = True
 
-    # Initialize model with full classes (9)
-    net = ViT_seg(config, img_size=args.img_size, num_classes=args.model_num_classes).cuda()
+    # IMPORTANT: Always initialize model with the full number of classes (9)
+    # that it was trained with, regardless of current dataset
+    FULL_MODEL_CLASSES = 9  # This should match the training configuration
+    net = ViT_seg(config, img_size=args.img_size, num_classes=FULL_MODEL_CLASSES).cuda()
 
     # Find the best model checkpoint
-    snapshot = os.path.join(args.output_dir, 'finetuned_final.pth')
+    snapshot = os.path.join(args.output_dir, 'continual_surgical_tpgm_final.pth')
     if not os.path.exists(snapshot):
         # Try to find the last epoch checkpoint
         checkpoint_files = [f for f in os.listdir(args.output_dir) if f.startswith('finetuned_epoch_')]
@@ -169,8 +174,9 @@ if __name__ == "__main__":
     state_dict = remove_base_model_prefix(state_dict=state_dict)
     net.load_state_dict(state_dict)
     print(f"Loaded model from {snapshot}")
+    print(f"Model initialized with {FULL_MODEL_CLASSES} classes, testing on {args.num_classes} classes for {args.dataset}")
 
-    # Wrap model to output only active classes
+    # Wrap model to output only active classes for current dataset
     net = OutputSliceWrapper(net, args.num_classes)
 
     log_folder = './test_log/test_log_'
@@ -179,6 +185,7 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
     logging.info(str(args))
     logging.info(f"Testing model: {snapshot}")
+    logging.info(f"Model has {FULL_MODEL_CLASSES} total classes, testing {args.num_classes} classes for {args.dataset}")
 
     if args.is_savenii:
         args.test_save_dir = os.path.join(args.output_dir, "predictions")

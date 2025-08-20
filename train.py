@@ -2,6 +2,13 @@ import argparse
 import logging
 import os
 import random
+
+# --- ADD THIS LINE ---
+# Set the CUDA_VISIBLE_DEVICES environment variable to use the second GPU (index 1)
+# This MUST be done before importing torch
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+# ---------------------
+
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -18,7 +25,7 @@ parser.add_argument('--list_dir', type=str,
                     default='./lists/lists_Synapse_blurred', help='list dir')
 parser.add_argument('--num_classes', type=int,
                     default=9, help='output channel of network')
-parser.add_argument('--output_dir', type=str, help='output dir')                   
+parser.add_argument('--output_dir', type=str, help='output dir')
 parser.add_argument('--max_iterations', type=int,
                     default=30000, help='maximum epoch number to train')
 parser.add_argument('--max_epochs', type=int,
@@ -86,6 +93,11 @@ if __name__ == "__main__":
             'root_path': args.root_path,
             'list_dir': './lists/kits23',
             'num_classes': 4,
+        },
+        'lits17': {
+            'root_path': args.root_path,
+            'list_dir': './lists/lits17',
+            'num_classes': 3,
         }
     }
 
@@ -100,5 +112,5 @@ if __name__ == "__main__":
     net = ViT_seg(config, img_size=args.img_size, num_classes=args.num_classes).cuda()
     net.load_from(config)
 
-    trainer = {'Synapse': trainer_synapse, 'kits23': trainer_synapse}
+    trainer = {'Synapse': trainer_synapse, 'kits23': trainer_synapse, 'lits17': trainer_synapse}
     trainer[dataset_name](args, net, args.output_dir)

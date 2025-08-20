@@ -15,16 +15,22 @@ from networks.vision_transformer import CSwinUnet as ViT_seg
 from config import get_config
 from thop import profile, clever_format
 
+# --- New Imports for Visualization ---
+import matplotlib.pyplot as plt
+import torch.nn.functional as F
+# --- End New Imports ---
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--volume_path', type=str,
-                    default='../data/Synapse/test_vol_h5', help='root dir for validation volume data')
+                    default='./datasets/Synapse/test_vol_h5', help='root dir for validation volume data')
 parser.add_argument('--dataset', type=str,
                     default='Synapse', help='experiment_name')
 parser.add_argument('--num_classes', type=int,
                     default=9, help='output channel of network')
 parser.add_argument('--list_dir', type=str,
                     default='./lists/lists_Synapse', help='list dir')
-parser.add_argument('--output_dir', type=str, help='output dir')   
+parser.add_argument('--output_dir', type=str, help='output dir')
 parser.add_argument('--max_iterations', type=int,default=30000, help='maximum epoch number to train')
 parser.add_argument('--max_epochs', type=int, default=150, help='maximum epoch number to train')
 parser.add_argument('--batch_size', type=int, default=24,
@@ -63,18 +69,89 @@ if args.dataset == "Synapse":
 config = get_config(args)
 
 
-def inference(args, model, test_save_path=None):
+# --- New Function to Save Visuals ---
+def save_visuals(image, label, prediction, case_name, slice_idx, save_dir):
+    """Saves a side-by-side comparison of the image, ground truth, and prediction."""
+    # Ensure inputs are 2D numpy arrays
+    image = np.squeeze(image)
+    label = np.squeeze(label)
+    prediction = np.squeeze(prediction)
+
+    plt.figure(figsize=(18, 6))
+
+    plt.subplot(1, 3, 1)
+    plt.imshow(image, cmap='gray')
+    plt.title('Input Image')
+    plt.axis('off')
+
+    plt.subplot(1, 3, 2)
+    plt.imshow(label, cmap='jet', vmin=0, vmax=args.num_classes-1)
+    plt.title('Ground Truth')
+    plt.axis('off')
+
+    plt.subplot(1, 3, 3)
+    plt.imshow(prediction, cmap='jet', vmin=0, vmax=args.num_classes-1)
+    plt.title('Model Prediction')
+    plt.axis('off')
+
+    save_path = os.path.join(save_dir, f"{case_name}_slice_{slice_idx}.png")
+    plt.savefig(save_path, bbox_inches='tight', pad_inches=0.1)
+    plt.close()  # Close the figure to free up memory
+# --- End New Function ---
+
+
+def inference(args, model, test_save_path=None, visual_save_dir=None):
     if args.dataset == "Synapse":
         db_test = args.Dataset(base_dir=args.volume_path, split="test_vol", list_dir=args.list_dir)
     elif args.dataset == "kits23":
         db_test = args.Dataset(base_dir=args.volume_path, split="test_vol", list_dir=args.list_dir)
+    elif args.dataset == "lits17":
+        db_test = args.Dataset(base_dir=args.volume_path, split="test_vol", list_dir=args.list_dir)
+    else:
+        raise ValueError(f"Dataset {args.dataset} not supported.")
+
     testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
     logging.info("{} test iterations per epoch".format(len(testloader)))
     model.eval()
     metric_list = 0.0
+
+    # --- New: Configuration for saving visuals ---
+    max_visuals_to_save = 5  # Save visuals for the first 5 cases
+    num_visuals_saved = 0
+    # --- End New ---
+
     for i_batch, sampled_batch in tqdm(enumerate(testloader)):
         h, w = sampled_batch["image"].size()[2:]
         image, label, case_name = sampled_batch["image"], sampled_batch["label"], sampled_batch['case_name'][0]
+
+        # --- New: Generate and save a visual prediction for a subset of images ---
+        if visual_save_dir and num_visuals_saved < max_visuals_to_save:
+            # The input from dataloader is a 3D volume, likely with shape (1, num_slices, H, W)
+            # We select the middle slice for visualization.
+            num_slices = image.shape[1]
+            mid_slice_idx = num_slices // 2
+
+            # Prepare the slice for the model: (B, C, H, W), C=3, H=W=img_size
+            image_slice_tensor = image[:, mid_slice_idx, :, :].unsqueeze(1)  # Shape: (1, 1, H, W)
+            image_slice_for_model = image_slice_tensor.repeat(1, 3, 1, 1)  # Shape: (1, 3, H, W)
+            resized_slice_for_model = F.interpolate(image_slice_for_model,
+                                                    size=(args.img_size, args.img_size),
+                                                    mode='bilinear',
+                                                    align_corners=False)
+            with torch.no_grad():
+                output = model(resized_slice_for_model.cuda())
+                # Resize output back to original slice dimensions for accurate visualization
+                output_resized = F.interpolate(output, size=(h, w), mode='bilinear', align_corners=False)
+                prediction_mask = torch.argmax(output_resized, dim=1).squeeze(0).cpu().numpy()
+
+            # Get original image and label slices for saving
+            original_image_slice = image[0, mid_slice_idx, :, :].cpu().numpy()
+            label_slice = label[0, mid_slice_idx, :, :].cpu().numpy()
+
+            save_visuals(original_image_slice, label_slice, prediction_mask, case_name, mid_slice_idx, visual_save_dir)
+            num_visuals_saved += 1
+        # --- End New ---
+
         metric_i = test_single_volume(image, label, model, classes=args.num_classes, patch_size=[args.img_size, args.img_size],
                                       test_save_path=test_save_path, case=case_name, z_spacing=args.z_spacing)
         metric_list += np.array(metric_i)
@@ -89,6 +166,7 @@ def inference(args, model, test_save_path=None):
 
 
 if __name__ == "__main__":
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
     if not args.deterministic:
         cudnn.benchmark = True
@@ -116,6 +194,13 @@ if __name__ == "__main__":
             'num_classes': 4,
             'z_spacing': 1,
         },
+        'lits17': {
+            'Dataset': Synapse_dataset,
+            'volume_path': args.volume_path,
+            'list_dir': './lists/lits17',
+            'num_classes': 3,
+            'z_spacing': 1,
+        },
     }
     dataset_name = args.dataset
     args.num_classes = dataset_config[dataset_name]['num_classes']
@@ -129,16 +214,23 @@ if __name__ == "__main__":
 
     snapshot = os.path.join(args.output_dir, 'best_model.pth')
     if not os.path.exists(snapshot): snapshot = snapshot.replace('best_model', 'epoch_'+str(args.max_epochs-1))
+
     msg = net.load_state_dict(torch.load(snapshot))
-    print("self trained cswin unet",msg)
+    print("Loaded model from:", snapshot)
     snapshot_name = snapshot.split('/')[-1]
 
     log_folder = './test_log/test_log_'
     os.makedirs(log_folder, exist_ok=True)
-    logging.basicConfig(filename="./log.txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
+    logging.basicConfig(filename=os.path.join(log_folder, f"log_{dataset_name}.txt"), level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
     logging.info(str(args))
     logging.info(snapshot_name)
+
+    # --- New: Create directory for visual predictions ---
+    visual_save_dir = "./test_visuals"
+    os.makedirs(visual_save_dir, exist_ok=True)
+    logging.info(f"Visualizations will be saved to {visual_save_dir}")
+    # --- End New ---
 
     if args.is_savenii:
         args.test_save_dir = os.path.join(args.output_dir, "predictions")
@@ -146,11 +238,14 @@ if __name__ == "__main__":
         os.makedirs(test_save_path, exist_ok=True)
     else:
         test_save_path = None
-    inference(args, net, test_save_path)
 
+    inference(args, net, test_save_path, visual_save_dir)
 
-    dummy_input = torch.randn(1, 3, args.img_size, args.img_size).cuda()
-    flops, params = profile(net, inputs=(dummy_input,))
-    flops, params = clever_format([flops, params], "%.3f")
-    print('FLOPs:', flops)
-    print('Params:', params)
+    try:
+        dummy_input = torch.randn(1, 3, args.img_size, args.img_size).cuda()
+        flops, params = profile(net, inputs=(dummy_input,))
+        flops, params = clever_format([flops, params], "%.3f")
+        print('FLOPs:', flops)
+        print('Params:', params)
+    except Exception as e:
+        print(f"Could not calculate FLOPs/Params: {e}")

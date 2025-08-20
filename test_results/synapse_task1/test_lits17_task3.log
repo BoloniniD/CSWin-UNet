@@ -1,0 +1,154 @@
+[14:04:19.826] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./debug_simple_tpgm_surgical_stage2/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[14:04:20.158] Loading checkpoint: ./debug_simple_tpgm_surgical_stage2/continual_surgical_tpgm_stage2_final.pth
+[14:04:20.267] Loaded model with strict=True
+[14:04:20.268] Model initialized with 14 classes
+[14:04:20.268] Testing on lits17 with 3 classes
+[14:04:20.492] FLOPs: 4.740G
+[14:04:20.492] Params: 23.569M
+[14:04:20.494] 10 test iterations per epoch
+[14:04:28.740] idx 0 case case00001 mean_dice 0.372066 mean_hd95 73.781903
+[14:04:36.141] idx 1 case case00002 mean_dice 0.301090 mean_hd95 74.909596
+[14:04:44.883] idx 2 case case00003 mean_dice 0.301558 mean_hd95 84.525147
+[14:04:48.907] idx 3 case case00004 mean_dice 0.317121 mean_hd95 83.748820
+[14:04:54.078] idx 4 case case00005 mean_dice 0.825777 mean_hd95 26.622359
+[14:05:00.019] idx 5 case case00006 mean_dice 0.444203 mean_hd95 71.992922
+[14:05:05.751] idx 6 case case00007 mean_dice 0.739000 mean_hd95 26.291634
+[14:05:11.243] idx 7 case case00008 mean_dice 0.370722 mean_hd95 50.646667
+[14:05:15.966] idx 8 case case00009 mean_dice 0.267729 mean_hd95 90.015960
+[14:05:21.221] idx 9 case case00010 mean_dice 0.322093 mean_hd95 68.181600
+[14:05:21.658] Mean class 1 mean_dice 0.597391 mean_hd95 57.204812
+[14:05:21.658] Mean class 2 mean_dice 0.254880 mean_hd95 72.938509
+[14:05:21.658] Testing performance: mean_dice : 0.426136 mean_hd95 : 65.071661
+[14:05:21.658] Dataset: lits17, Model: task3
+[16:01:06.660] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./simple_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[16:01:07.018] Loading checkpoint: ./simple_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth
+[16:01:07.116] Loaded model with strict=True
+[16:01:07.116] Model initialized with 14 classes
+[16:01:07.116] Testing on lits17 with 3 classes
+[16:01:07.353] FLOPs: 4.740G
+[16:01:07.353] Params: 23.569M
+[16:01:07.353] 10 test iterations per epoch
+[16:01:15.447] idx 0 case case00001 mean_dice 0.418510 mean_hd95 60.508657
+[16:01:22.697] idx 1 case case00002 mean_dice 0.384870 mean_hd95 68.597252
+[16:01:31.505] idx 2 case case00003 mean_dice 0.405500 mean_hd95 70.366835
+[16:01:35.464] idx 3 case case00004 mean_dice 0.408295 mean_hd95 54.100143
+[16:01:40.468] idx 4 case case00005 mean_dice 0.926139 mean_hd95 16.926311
+[16:01:46.257] idx 5 case case00006 mean_dice 0.572182 mean_hd95 51.949615
+[16:01:51.858] idx 6 case case00007 mean_dice 0.833189 mean_hd95 21.592823
+[16:01:57.209] idx 7 case case00008 mean_dice 0.404740 mean_hd95 53.009635
+[16:02:01.823] idx 8 case case00009 mean_dice 0.481291 mean_hd95 63.750316
+[16:02:06.902] idx 9 case case00010 mean_dice 0.419205 mean_hd95 60.555441
+[16:02:07.307] Mean class 1 mean_dice 0.783035 mean_hd95 40.118377
+[16:02:07.308] Mean class 2 mean_dice 0.267749 mean_hd95 64.153029
+[16:02:07.308] Testing performance: mean_dice : 0.525392 mean_hd95 : 52.135703
+[16:02:07.308] Dataset: lits17, Model: task3
+[17:26:28.773] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./surgical_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[17:26:29.137] Loading checkpoint: ./surgical_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth
+[17:26:29.250] Loaded model with strict=True
+[17:26:29.250] Model initialized with 14 classes
+[17:26:29.250] Testing on lits17 with 3 classes
+[17:26:29.483] FLOPs: 4.740G
+[17:26:29.483] Params: 23.569M
+[17:26:29.485] 10 test iterations per epoch
+[17:26:38.376] idx 0 case case00001 mean_dice 0.427223 mean_hd95 50.432899
+[17:26:46.097] idx 1 case case00002 mean_dice 0.365463 mean_hd95 62.648431
+[17:26:55.201] idx 2 case case00003 mean_dice 0.356718 mean_hd95 72.416946
+[17:26:59.405] idx 3 case case00004 mean_dice 0.383405 mean_hd95 59.195416
+[17:27:04.819] idx 4 case case00005 mean_dice 0.866284 mean_hd95 25.129166
+[17:27:10.724] idx 5 case case00006 mean_dice 0.500591 mean_hd95 56.216253
+[17:27:17.012] idx 6 case case00007 mean_dice 0.783937 mean_hd95 21.788759
+[17:27:22.494] idx 7 case case00008 mean_dice 0.400278 mean_hd95 42.522034
+[17:27:27.130] idx 8 case case00009 mean_dice 0.334820 mean_hd95 69.256263
+[17:27:32.307] idx 9 case case00010 mean_dice 0.371993 mean_hd95 62.205134
+[17:27:32.817] Mean class 1 mean_dice 0.683168 mean_hd95 52.038297
+[17:27:32.817] Mean class 2 mean_dice 0.274974 mean_hd95 52.323963
+[17:27:32.817] Testing performance: mean_dice : 0.479071 mean_hd95 : 52.181130
+[17:27:32.817] Dataset: lits17, Model: task3
+[03:27:26.697] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./tpgm_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[03:27:27.059] Loading checkpoint: ./tpgm_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth
+[03:27:27.156] Loaded model with strict=True
+[03:27:27.157] Model initialized with 14 classes
+[03:27:27.157] Testing on lits17 with 3 classes
+[03:27:27.392] FLOPs: 4.740G
+[03:27:27.392] Params: 23.569M
+[03:27:27.394] 10 test iterations per epoch
+[03:27:35.533] idx 0 case case00001 mean_dice 0.403967 mean_hd95 63.840787
+[03:27:42.826] idx 1 case case00002 mean_dice 0.359804 mean_hd95 68.584167
+[03:27:51.520] idx 2 case case00003 mean_dice 0.368239 mean_hd95 82.351288
+[03:27:55.513] idx 3 case case00004 mean_dice 0.376824 mean_hd95 80.357086
+[03:28:00.609] idx 4 case case00005 mean_dice 0.891077 mean_hd95 19.949937
+[03:28:06.345] idx 5 case case00006 mean_dice 0.505648 mean_hd95 73.304448
+[03:28:11.942] idx 6 case case00007 mean_dice 0.794442 mean_hd95 23.248656
+[03:28:17.277] idx 7 case case00008 mean_dice 0.399196 mean_hd95 49.512347
+[03:28:21.940] idx 8 case case00009 mean_dice 0.339139 mean_hd95 87.256430
+[03:28:27.075] idx 9 case case00010 mean_dice 0.376771 mean_hd95 66.114110
+[03:28:27.540] Mean class 1 mean_dice 0.710696 mean_hd95 49.536287
+[03:28:27.541] Mean class 2 mean_dice 0.252325 mean_hd95 73.367564
+[03:28:27.541] Testing performance: mean_dice : 0.481511 mean_hd95 : 61.451926
+[03:28:27.541] Dataset: lits17, Model: task3
+[17:58:03.800] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./simple_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[17:58:04.146] Loading checkpoint: ./simple_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth
+[17:58:04.238] Loaded model with strict=True
+[17:58:04.238] Model initialized with 14 classes
+[17:58:04.238] Testing on lits17 with 3 classes
+[17:58:04.475] FLOPs: 4.740G
+[17:58:04.475] Params: 23.569M
+[17:58:04.477] 10 test iterations per epoch
+[17:58:12.800] idx 0 case case00001 mean_dice 0.384925 mean_hd95 68.356777
+[17:58:20.176] idx 1 case case00002 mean_dice 0.372181 mean_hd95 70.135790
+[17:58:28.994] idx 2 case case00003 mean_dice 0.386332 mean_hd95 73.211714
+[17:58:33.162] idx 3 case case00004 mean_dice 0.381177 mean_hd95 61.388566
+[17:58:38.400] idx 4 case case00005 mean_dice 0.917583 mean_hd95 19.300259
+[17:58:44.285] idx 5 case case00006 mean_dice 0.529375 mean_hd95 52.306318
+[17:58:49.829] idx 6 case case00007 mean_dice 0.816076 mean_hd95 23.205603
+[17:58:55.113] idx 7 case case00008 mean_dice 0.391993 mean_hd95 54.464270
+[17:58:59.736] idx 8 case case00009 mean_dice 0.438938 mean_hd95 63.681550
+[17:59:04.846] idx 9 case case00010 mean_dice 0.399245 mean_hd95 64.247386
+[17:59:05.292] Mean class 1 mean_dice 0.753188 mean_hd95 46.013040
+[17:59:05.292] Mean class 2 mean_dice 0.250377 mean_hd95 64.046607
+[17:59:05.292] Testing performance: mean_dice : 0.501783 mean_hd95 : 55.029823
+[17:59:05.292] Dataset: lits17, Model: task3
+[23:09:09.068] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./tpgm_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[23:09:09.407] Loading checkpoint: ./tpgm_finetuning_lits17/continual_surgical_tpgm_stage2_final.pth
+[23:09:09.502] Loaded model with strict=True
+[23:09:09.502] Model initialized with 14 classes
+[23:09:09.502] Testing on lits17 with 3 classes
+[23:09:09.727] FLOPs: 4.740G
+[23:09:09.727] Params: 23.569M
+[23:09:09.728] 10 test iterations per epoch
+[23:09:18.036] idx 0 case case00001 mean_dice 0.417460 mean_hd95 60.063238
+[23:09:25.573] idx 1 case case00002 mean_dice 0.401459 mean_hd95 66.037556
+[23:09:34.655] idx 2 case case00003 mean_dice 0.406337 mean_hd95 71.313415
+[23:09:38.960] idx 3 case case00004 mean_dice 0.406975 mean_hd95 47.949030
+[23:09:44.427] idx 4 case case00005 mean_dice 0.925299 mean_hd95 18.668155
+[23:09:50.661] idx 5 case case00006 mean_dice 0.594312 mean_hd95 42.600876
+[23:09:56.520] idx 6 case case00007 mean_dice 0.831919 mean_hd95 22.315914
+[23:10:02.224] idx 7 case case00008 mean_dice 0.397579 mean_hd95 53.057371
+[23:10:06.966] idx 8 case case00009 mean_dice 0.508224 mean_hd95 64.367688
+[23:10:12.236] idx 9 case case00010 mean_dice 0.415521 mean_hd95 66.313277
+[23:10:12.781] Mean class 1 mean_dice 0.782499 mean_hd95 43.030711
+[23:10:12.781] Mean class 2 mean_dice 0.278518 mean_hd95 59.506593
+[23:10:12.781] Testing performance: mean_dice : 0.530509 mean_hd95 : 51.268652
+[23:10:12.781] Dataset: lits17, Model: task3
+[00:06:38.054] Namespace(volume_path='./datasets/lits17/test_vol_h5', test_dataset='lits17', model_path='./debug_simple_tpgm_surgical_stage2/continual_surgical_tpgm_stage2_final.pth', model_task_level='task3', list_dir='./lists/lits17', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
+[00:06:38.396] Loading checkpoint: ./debug_simple_tpgm_surgical_stage2/continual_surgical_tpgm_stage2_final.pth
+[00:06:38.498] Loaded model with strict=True
+[00:06:38.498] Model initialized with 14 classes
+[00:06:38.498] Testing on lits17 with 3 classes
+[00:06:38.730] FLOPs: 4.740G
+[00:06:38.730] Params: 23.569M
+[00:06:38.731] 10 test iterations per epoch
+[00:06:47.014] idx 0 case case00001 mean_dice 0.398545 mean_hd95 70.968786
+[00:06:54.646] idx 1 case case00002 mean_dice 0.329883 mean_hd95 68.333292
+[00:07:03.655] idx 2 case case00003 mean_dice 0.324236 mean_hd95 80.004788
+[00:07:07.653] idx 3 case case00004 mean_dice 0.333415 mean_hd95 76.819495
+[00:07:12.897] idx 4 case case00005 mean_dice 0.842453 mean_hd95 22.940139
+[00:07:18.873] idx 5 case case00006 mean_dice 0.484329 mean_hd95 57.428348
+[00:07:24.669] idx 6 case case00007 mean_dice 0.762530 mean_hd95 23.732889
+[00:07:30.190] idx 7 case case00008 mean_dice 0.375305 mean_hd95 49.006636
+[00:07:34.943] idx 8 case case00009 mean_dice 0.317494 mean_hd95 83.116662
+[00:07:40.268] idx 9 case case00010 mean_dice 0.340081 mean_hd95 66.837595
+[00:07:40.754] Mean class 1 mean_dice 0.633057 mean_hd95 52.192762
+[00:07:40.754] Mean class 2 mean_dice 0.268597 mean_hd95 67.644964
+[00:07:40.754] Testing performance: mean_dice : 0.450827 mean_hd95 : 59.918863
+[00:07:40.754] Dataset: lits17, Model: task3

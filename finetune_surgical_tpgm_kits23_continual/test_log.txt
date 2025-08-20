@@ -1,0 +1,49 @@
+[13:04:30.918] Namespace(volume_path='./datasets/Synapse\\test_vol_h5', dataset='Synapse', num_classes=9, model_num_classes=9, num_classes_new_task=4, list_dir='./lists/lists_Synapse', output_dir='./finetune_surgical_tpgm_kits23_continual', max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1, is_pretrain=True)
+[13:04:30.918] Testing model: ./finetune_surgical_tpgm_kits23_continual\surgical_tpgm_continual_epoch_44.pth
+[13:04:30.919] Model has 12 total classes, testing 9 classes for Synapse
+[13:04:31.148] FLOPs: 4.733G
+[13:04:31.148] Params: 23.569M
+[13:04:31.149] 11 test iterations per epoch
+[13:05:41.343] idx 0 case case0008 mean_dice 0.686043 mean_hd95 16.493852
+[13:06:18.636] idx 1 case case0022 mean_dice 0.855052 mean_hd95 43.302107
+[13:06:56.460] idx 2 case case0038 mean_dice 0.769149 mean_hd95 40.170648
+[13:08:22.016] idx 3 case case0036 mean_dice 0.827595 mean_hd95 18.865831
+[13:09:24.705] idx 4 case case0032 mean_dice 0.883646 mean_hd95 22.565486
+[13:10:23.637] idx 5 case case0002 mean_dice 0.864824 mean_hd95 7.238386
+[13:11:04.958] idx 6 case case0029 mean_dice 0.695284 mean_hd95 43.513208
+[13:12:27.374] idx 7 case case0003 mean_dice 0.681267 mean_hd95 96.982198
+[13:13:27.981] idx 8 case case0004 mean_dice 0.742938 mean_hd95 13.949632
+[13:14:03.616] idx 9 case case0025 mean_dice 0.865967 mean_hd95 3.347835
+[13:14:39.294] idx 10 case case0035 mean_dice 0.889705 mean_hd95 3.493387
+[13:14:39.800] Mean class 1 mean_dice 0.857470 mean_hd95 11.938659
+[13:14:39.800] Mean class 2 mean_dice 0.632661 mean_hd95 28.703949
+[13:14:39.800] Mean class 3 mean_dice 0.804135 mean_hd95 56.390613
+[13:14:39.800] Mean class 4 mean_dice 0.746681 mean_hd95 54.015910
+[13:14:39.800] Mean class 5 mean_dice 0.938873 mean_hd95 31.301211
+[13:14:39.800] Mean class 6 mean_dice 0.664979 mean_hd95 13.543821
+[13:14:39.800] Mean class 7 mean_dice 0.909620 mean_hd95 11.347326
+[13:14:39.801] Mean class 8 mean_dice 0.817559 mean_hd95 18.156744
+[13:20:58.552] Namespace(volume_path='./datasets/kits23/test_vol_h5', dataset='kits23', num_classes=4, model_num_classes=9, num_classes_new_task=4, list_dir='./lists/kits23', output_dir='./finetune_surgical_tpgm_kits23_continual', max_iterations=30000, max_epochs=150, batch_size=24, img_size=224, is_savenii=True, test_save_dir='../predictions', deterministic=1, base_lr=0.01, seed=1234, cfg='configs/pretrain_kits23.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False, Dataset=<class 'datasets.dataset_synapse.Synapse_dataset'>, z_spacing=1, is_pretrain=True)
+[13:20:58.552] Testing model: ./finetune_surgical_tpgm_kits23_continual\surgical_tpgm_continual_epoch_44.pth
+[13:20:58.552] Model has 12 total classes, testing 4 classes for kits23
+[13:20:58.787] FLOPs: 4.733G
+[13:20:58.787] Params: 23.569M
+[13:20:58.787] 15 test iterations per epoch
+[13:21:12.332] idx 0 case case00142 mean_dice 0.333533 mean_hd95 27.792485
+[13:21:14.118] idx 1 case case00152 mean_dice 0.012616 mean_hd95 42.680975
+[13:21:17.316] idx 2 case case00187 mean_dice 0.333640 mean_hd95 18.978350
+[13:21:29.331] idx 3 case case00193 mean_dice 0.003751 mean_hd95 66.035609
+[13:21:33.370] idx 4 case case00206 mean_dice 0.004649 mean_hd95 59.834377
+[13:22:03.134] idx 5 case case00246 mean_dice 0.023291 mean_hd95 47.931929
+[13:22:15.401] idx 6 case case00273 mean_dice 0.002032 mean_hd95 73.422565
+[13:22:21.757] idx 7 case case00274 mean_dice 0.009126 mean_hd95 64.123980
+[13:22:44.721] idx 8 case case00412 mean_dice 0.000101 mean_hd95 33.836058
+[13:22:48.400] idx 9 case case00426 mean_dice 0.000757 mean_hd95 13.406466
+[13:22:57.058] idx 10 case case00447 mean_dice 0.342195 mean_hd95 40.319403
+[13:23:00.820] idx 11 case case00450 mean_dice 0.334355 mean_hd95 10.159834
+[13:23:10.185] idx 12 case case00488 mean_dice 0.337212 mean_hd95 27.622048
+[13:23:15.531] idx 13 case case00533 mean_dice 0.363318 mean_hd95 62.282551
+[13:23:25.091] idx 14 case case00568 mean_dice 0.001795 mean_hd95 46.324931
+[13:23:26.296] Mean class 1 mean_dice 0.020316 mean_hd95 48.516577
+[13:23:26.298] Mean class 2 mean_dice 0.000000 mean_hd95 45.791362
+[13:23:26.299] Mean class 3 mean_dice 0.400158 mean_hd95 32.642373

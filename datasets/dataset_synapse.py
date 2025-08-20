@@ -48,7 +48,7 @@ class RandomGenerator(object):
 
 
 class Synapse_dataset(Dataset):
-    def __init__(self, base_dir, list_dir, split, transform=None, is_kits=False):
+    def __init__(self, base_dir, list_dir, split, transform=None, is_kits=False, is_lits=False):
         self.transform = transform  # using transform in torch!
         self.split = split
         self.sample_list = open(os.path.join(list_dir, self.split+'.txt')).readlines()
