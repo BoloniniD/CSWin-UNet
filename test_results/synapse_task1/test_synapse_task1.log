@@ -1,5 +1,0 @@
-[14:03:13.998] Namespace(volume_path='./datasets/Synapse/test_vol_h5', test_dataset='synapse', model_path='./universal_script_test/continual_surgical_tpgm_final.pth', model_task_level='task1', list_dir='./lists/lists_Synapse', output_dir='./test_results/synapse_task1', batch_size=1, img_size=224, is_savenii=False, test_save_dir='./predictions', deterministic=1, seed=1234, cfg='configs/finetune.yaml', opts=None, zip=False, cache_mode='part', resume=None, accumulation_steps=None, use_checkpoint=False, amp_opt_level='O1', tag=None, eval=False, throughput=False)
-[14:03:14.354] Loading checkpoint: ./universal_script_test/continual_surgical_tpgm_final.pth
-[14:03:14.449] Strict loading failed: Error(s) in loading state_dict for CSwinUnet:
-	size mismatch for cswin_unet.output.weight: copying a param with shape torch.Size([12, 64, 1, 1]) from checkpoint, the shape in current model is torch.Size([9, 64, 1, 1]).
-[14:03:14.449] Attempting to load with strict=False
