@@ -22,8 +22,6 @@ import torch.nn.functional as F
 import itertools
 import copy
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-
 # Argument parser setup
 parser = argparse.ArgumentParser()
 parser.add_argument('--root_path', type=str,
@@ -119,7 +117,6 @@ parser.add_argument('--throughput', action='store_true', help='Test throughput o
 args = parser.parse_args()
 config = get_config(args)
 
-# Calculate stage-specific class numbers
 def get_stage_info(args):
     """Calculate class numbers based on the current stage"""
     if args.stage == 1:
@@ -132,9 +129,9 @@ def get_stage_info(args):
 
     elif args.stage == 2:
         # Stage 2: Synapse+kits23 (12) -> lits17 (3)
-        old_classes = args.num_classes_old  # e.g., 12 (provided by user)
-        new_classes = args.num_classes_lits17  # e.g., 3
-        total_classes = old_classes + new_classes - 1  # 14
+        old_classes = args.num_classes_old
+        new_classes = args.num_classes_lits17
+        total_classes = old_classes + new_classes - 1
         dataset_name = 'lits17'
         return old_classes, new_classes, total_classes, dataset_name
 
@@ -152,7 +149,6 @@ class FocalLoss(nn.Module):
     def forward(self, inputs, targets):
         self.call_count += 1
 
-        # Debug info every 100 calls
         if self.call_count % 100 == 1:
             print(f"\n=== FocalLoss Debug (call #{self.call_count}) ===")
             print(f"  inputs shape: {inputs.shape}")
@@ -163,29 +159,23 @@ class FocalLoss(nn.Module):
             if self.weight is not None:
                 print(f"  non-zero weights: {[(i, self.weight[i].item()) for i in range(len(self.weight)) if self.weight[i] > 0]}")
 
-        # Clamp targets to valid range
         targets = torch.clamp(targets, 0, inputs.size(1) - 1)
 
-        # Calculate cross entropy with better error handling
         try:
             ce_loss = F.cross_entropy(inputs, targets, weight=self.weight, reduction='none')
 
-            # Check for issues
             if torch.any(torch.isnan(ce_loss)) or torch.any(torch.isinf(ce_loss)):
                 print(f"WARNING: NaN/Inf detected in CE loss!")
                 print(f"  ce_loss stats: min={ce_loss.min().item()}, max={ce_loss.max().item()}")
-                # Don't set to zero, instead use a small positive value
                 ce_loss = torch.nan_to_num(ce_loss, nan=1e-6, posinf=10.0, neginf=1e-6)
 
             pt = torch.exp(-ce_loss)
             focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss
             result = focal_loss.mean()
 
-            # Final check
             if torch.isnan(result) or torch.isinf(result):
                 print(f"WARNING: Final focal loss is NaN/Inf!")
                 print(f"  focal_loss stats: min={focal_loss.min().item()}, max={focal_loss.max().item()}")
-                # Return a small positive loss instead of zero
                 return torch.tensor(1e-3, device=inputs.device, requires_grad=True)
 
             if self.call_count % 100 == 1:
@@ -206,12 +196,9 @@ class PositiveSamplingDataset(torch.utils.data.Dataset):
         self.positive_ratio = positive_ratio
         self.stage = stage
 
-        # Separate by class for better sampling
         if stage == 1:
-            # kits23: classes 0, 1, 2, 3
             self.class_indices = {0: [], 1: [], 2: [], 3: []}
         elif stage == 2:
-            # lits17: classes 0, 1, 2
             self.class_indices = {0: [], 1: [], 2: []}
 
         for idx in range(len(base_dataset)):
@@ -231,23 +218,22 @@ class PositiveSamplingDataset(torch.utils.data.Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        # Adjust sampling strategy based on stage
         if self.stage == 1:
             # kits23 sampling strategy
-            if random.random() < 0.3 and self.class_indices[3]:  # Class 3 (rarest)
+            if random.random() < 0.3 and self.class_indices[3]:
                 real_idx = random.choice(self.class_indices[3])
-            elif random.random() < 0.5 and self.class_indices[2]:  # Class 2
+            elif random.random() < 0.5 and self.class_indices[2]:
                 real_idx = random.choice(self.class_indices[2])
-            elif random.random() < self.positive_ratio and self.class_indices[1]:  # Class 1
+            elif random.random() < self.positive_ratio and self.class_indices[1]:
                 real_idx = random.choice(self.class_indices[1])
             else:
                 real_idx = idx % len(self.base_dataset)
 
         elif self.stage == 2:
             # lits17 sampling strategy
-            if random.random() < 0.4 and self.class_indices[2]:  # Class 2 (lesion - rarest)
+            if random.random() < 0.4 and self.class_indices[2]:
                 real_idx = random.choice(self.class_indices[2])
-            elif random.random() < self.positive_ratio and self.class_indices[1]:  # Class 1 (liver)
+            elif random.random() < self.positive_ratio and self.class_indices[1]:
                 real_idx = random.choice(self.class_indices[1])
             else:
                 real_idx = idx % len(self.base_dataset)
@@ -259,17 +245,15 @@ def map_new_dataset_labels(labels, stage, num_classes_old):
     mapped = labels.clone()
 
     if stage == 1:
-        # Stage 1: kits23 mapping
         # Background (0) stays 0, new classes (1,2,3) become (9,10,11)
-        mapped[labels == 1] = num_classes_old      # 9
-        mapped[labels == 2] = num_classes_old + 1  # 10
-        mapped[labels == 3] = num_classes_old + 2  # 11
+        mapped[labels == 1] = num_classes_old
+        mapped[labels == 2] = num_classes_old + 1
+        mapped[labels == 3] = num_classes_old + 2
 
     elif stage == 2:
-        # Stage 2: lits17 mapping
         # Background (0) stays 0, new classes (1,2) become (12,13)
-        mapped[labels == 1] = num_classes_old      # 12
-        mapped[labels == 2] = num_classes_old + 1  # 13
+        mapped[labels == 1] = num_classes_old
+        mapped[labels == 2] = num_classes_old + 1
 
     return mapped
 
@@ -282,18 +266,14 @@ class ContinualLearningModel(nn.Module):
         self.num_classes_old = num_classes_old
         self.num_classes_new = num_classes_new
         self.stage = stage
-        # Total classes = old + new - 1 (shared background)
-        self.num_classes_total = num_classes_old + num_classes_new - 1
+        self.num_classes_total = num_classes_old + num_classes_new - 1  # Total classes = old + new - 1 (shared background)
 
-        # Find and replace the final classification layer
         self._expand_final_layer()
 
     def _expand_final_layer(self):
         """Find and expand the final classification layer"""
-        # Common names for final layers in segmentation models
         final_layer_candidates = ['output', 'final', 'classifier', 'head', 'segmentation_head']
 
-        # First, try to find by common names
         final_layer_found = False
         for candidate_name in final_layer_candidates:
             if hasattr(self.base_model, candidate_name):
@@ -305,7 +285,6 @@ class ContinualLearningModel(nn.Module):
                     final_layer_found = True
                     break
 
-        # If not found by name, search through all modules
         if not final_layer_found:
             final_layer_found = self._search_and_replace_final_layer()
 
@@ -323,7 +302,6 @@ class ContinualLearningModel(nn.Module):
     def _create_expanded_layer(self, old_module):
         """Create an expanded version of the classification layer"""
         if isinstance(old_module, nn.Conv2d):
-            # Handle Conv2d layer
             new_conv = nn.Conv2d(
                 in_channels=old_module.in_channels,
                 out_channels=self.num_classes_total,
@@ -333,40 +311,31 @@ class ContinualLearningModel(nn.Module):
                 bias=old_module.bias is not None
             )
 
-            # Copy old weights for existing classes
             with torch.no_grad():
                 new_conv.weight[:self.num_classes_old] = old_module.weight
 
-                # Handle bias if it exists
                 if old_module.bias is not None:
                     new_conv.bias[:self.num_classes_old] = old_module.bias
-                    # Initialize new class biases
                     nn.init.constant_(new_conv.bias[self.num_classes_old:], 0)
 
-                # Initialize new class weights
                 nn.init.kaiming_normal_(new_conv.weight[self.num_classes_old:])
 
             return new_conv
 
         elif isinstance(old_module, nn.Linear):
-            # Handle Linear layer
             new_linear = nn.Linear(
                 in_features=old_module.in_features,
                 out_features=self.num_classes_total,
                 bias=old_module.bias is not None
             )
 
-            # Copy old weights for existing classes
             with torch.no_grad():
                 new_linear.weight[:self.num_classes_old] = old_module.weight
 
-                # Handle bias if it exists
                 if old_module.bias is not None:
                     new_linear.bias[:self.num_classes_old] = old_module.bias
-                    # Initialize new class biases
                     nn.init.constant_(new_linear.bias[self.num_classes_old:], 0)
 
-                # Initialize new class weights
                 nn.init.kaiming_normal_(new_linear.weight[self.num_classes_old:])
 
             return new_linear
@@ -378,10 +347,8 @@ class ContinualLearningModel(nn.Module):
         """Search through all modules to find and replace the final classification layer"""
         for name, module in self.base_model.named_modules():
             if self._is_classification_layer(module):
-                # Found potential final layer
                 new_layer = self._create_expanded_layer(module)
 
-                # Replace the module
                 parent_name = '.'.join(name.split('.')[:-1])
                 child_name = name.split('.')[-1]
 
@@ -422,7 +389,7 @@ class temporary_parameter_replace:
 
 
 class TPGM(nn.Module):
-    """Task-specific Parameter Generation and Matching - CORRECTED VERSION"""
+    """Task-specific Parameter Generation and Matching"""
     def __init__(self, model, norm_mode, exclude_list=[], enabled=True) -> None:
         super().__init__()
         self.enabled = enabled
@@ -449,9 +416,9 @@ class TPGM(nn.Module):
 
                 # Be VERY permissive for final/classification layers
                 if any(layer_name in name.lower() for layer_name in ['head', 'final', 'classifier', 'output', 'segmentation_head']):
-                    init_val = max(10.0, param_norm * 5.0)  # Very permissive for final layers
+                    init_val = max(10.0, param_norm * 5.0)
                 else:
-                    init_val = max(3.0, param_norm * 2.0)  # Moderately permissive for other layers
+                    init_val = max(3.0, param_norm * 2.0)
 
                 temp = nn.Parameter(torch.Tensor([init_val]), requires_grad=True)
                 self.constraints.append(temp)
@@ -464,7 +431,7 @@ class TPGM(nn.Module):
         new_module = new.module if isinstance(new, nn.DataParallel) else new
         pre_trained_module = pre_trained.module if isinstance(pre_trained, nn.DataParallel) else pre_trained
 
-        # FIX: Match parameters by NAME, not position
+        # Match parameters by NAME, not position
         pretrained_params = dict(pre_trained_module.named_parameters())
 
         for name, new_para in new_module.named_parameters():
@@ -502,9 +469,9 @@ class TPGM(nn.Module):
 
         # MUCH MORE PERMISSIVE constraints
         if any(layer_name in name.lower() for layer_name in ['head', 'final', 'classifier', 'output', 'segmentation_head']):
-            max_constraint = max(norms.item() * 10, 100.0)  # Very permissive for final layers
+            max_constraint = max(norms.item() * 10, 100.0)
         else:
-            max_constraint = max(norms.item() * 8, 80.0)    # Moderately permissive for other layers
+            max_constraint = max(norms.item() * 8, 80.0)
 
         constraint = torch.clamp(constraint_param, min=1e-2, max=max_constraint)
         ratio = constraint / (norms + 1e-8)
@@ -619,7 +586,6 @@ class tpgm_trainer(object):
                 pgm_image = data['image'].to(self.device)
                 pgm_target = data['label'].to(self.device)
 
-                # Map new dataset labels to the expanded label space for TPGM based on stage
                 pgm_target_mapped = map_new_dataset_labels(pgm_target, self.stage, self.num_classes_old)
 
                 outputs = self.tpgm(model, self.pre_trained, x=pgm_image, active_classes=self.active_classes)
@@ -631,7 +597,6 @@ class tpgm_trainer(object):
                 self.pgm_optimizer.zero_grad()
                 pgm_loss.backward()
 
-                # Clip gradients for constraint parameters
                 torch.nn.utils.clip_grad_norm_(self.tpgm.constraints, max_norm=1.0)
 
                 self.pgm_optimizer.step()
@@ -673,20 +638,17 @@ def get_lr_weights(model, loader, args, criterion, num_classes_new, stage, num_c
     metrics = defaultdict(list)
     average_metrics = defaultdict(float)
 
-    # Use limited batches for gradient calculation
     partial_loader = itertools.islice(loader, args.gradient_batches)
     xent_grads = []
 
-    model.eval()  # Set to eval mode for gradient calculation
+    model.eval()
 
-    # Calculate gradients for cross-entropy loss
     for batch_data in partial_loader:
         image_batch, label_batch = batch_data['image'], batch_data['label']
         image_batch, label_batch = image_batch.cuda(), label_batch.cuda()
 
         outputs = model(image_batch)
 
-        # Map new dataset labels to the expanded label space based on stage
         label_batch_mapped = map_new_dataset_labels(label_batch, stage, num_classes_old)
 
         loss_ce = criterion(outputs, label_batch_mapped.long())
@@ -705,12 +667,10 @@ def get_lr_weights(model, loader, args, criterion, num_classes_new, stage, num_c
                 continue
 
             if args.auto_tune == "eb-criterion":
-                # Compute evidence-based criterion
                 grad_var = torch.var(grad, dim=0, keepdim=True)
                 tmp = (grad * grad) / (grad_var + 1e-8)
                 _metrics[name] = tmp.mean().item()
             else:  # RGN
-                # Compute relative gradient norm
                 param_norm = torch.norm(param).item()
                 if param_norm > 1e-8:
                     _metrics[name] = torch.norm(grad).item() / param_norm
@@ -718,7 +678,6 @@ def get_lr_weights(model, loader, args, criterion, num_classes_new, stage, num_c
                     _metrics[name] = 0.0
         return _metrics
 
-    # Average metrics across batches
     for xent_grad in xent_grads:
         xent_grad_metrics = get_grad_norms(model, xent_grad, args)
         for k, v in xent_grad_metrics.items():
@@ -736,15 +695,12 @@ def create_surgical_optimizer(model, base_lr, weights, args):
     param_groups = []
     param_dict = dict(model.named_parameters())
 
-    # Store layer info for logging
     layer_info = []
 
     if args.auto_tune == "none":
-        # Standard optimizer
         return optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
                           lr=base_lr, weight_decay=0.01), []
 
-    # Create parameter groups with different learning rates
     for name, param in param_dict.items():
         if not param.requires_grad:
             continue
@@ -752,7 +708,7 @@ def create_surgical_optimizer(model, base_lr, weights, args):
         if name in weights:
             lr = weights[name] * base_lr
         else:
-            lr = 0.0  # Don't update parameters not in weights
+            lr = 0.0
 
         param_groups.append({
             'params': [param],
@@ -760,7 +716,6 @@ def create_surgical_optimizer(model, base_lr, weights, args):
             'name': name
         })
 
-        # Store info for logging
         layer_info.append({
             'name': name,
             'weight': weights.get(name, 0.0),
@@ -778,7 +733,6 @@ def log_layer_learning_rates(layer_info, args):
     logging.info(f"{'Layer Name':<50} {'Weight':<12} {'Learning Rate':<15}")
     logging.info("-"*80)
 
-    # Sort by learning rate (descending) to see which layers get highest LR
     sorted_layers = sorted(layer_info, key=lambda x: x['lr'], reverse=True)
 
     active_layers = 0
@@ -809,15 +763,12 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
     base_lr = args.base_lr
     batch_size = args.batch_size * args.n_gpu
 
-    # Load dataset based on stage
     if args.stage == 1:
-        # Stage 1: kits23
         db_train_full = Synapse_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
                                         transform=transforms.Compose(
                                             [RandomGenerator(output_size=[args.img_size, args.img_size])]),
                                         is_kits=True)
     elif args.stage == 2:
-        # Stage 2: lits17
         db_train_full = Synapse_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
                                         transform=transforms.Compose(
                                             [RandomGenerator(output_size=[args.img_size, args.img_size])]),
@@ -834,7 +785,6 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
         db_train = db_train_full
         subset_size = total_samples
 
-    # Create TPGM dataset (smaller subset)
     tpgm_size = int(subset_size * args.tpgm_data_fraction)
     if not args.disable_tpgm and tpgm_size > 0:
         tpgm_indices = random.sample(range(subset_size), tpgm_size)
@@ -854,20 +804,16 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
     logging.info(f"TPGM enabled: {not args.disable_tpgm}")
     logging.info(f"Surgical fine-tuning method: {args.auto_tune}")
 
-    # Create positive sampling dataset and initial dataloader for analysis
     db_train_positive = PositiveSamplingDataset(db_train, positive_ratio=0.8, stage=args.stage)
     temp_loader = DataLoader(db_train_positive, batch_size=batch_size, shuffle=True,
                            num_workers=4, pin_memory=True, worker_init_fn=worker_init_fn)
 
-    # Analyze class distribution
     print("Analyzing class distribution...")
     analyze_class_distribution(temp_loader, stage=args.stage)
 
-    # Calculate class weights
     print("Calculating class weights...")
     class_weights = calculate_extreme_class_weights(temp_loader, total_classes, args, stage_info)
 
-    # Now create the actual training dataloader
     trainloader = DataLoader(db_train_positive, batch_size=batch_size, shuffle=True,
                            num_workers=4, pin_memory=True, worker_init_fn=worker_init_fn)
 
@@ -878,11 +824,9 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
         model = nn.DataParallel(model)
         old_model = nn.DataParallel(old_model)
 
-    # Loss functions (now class_weights is defined)
     ce_loss = FocalLoss(alpha=1, gamma=4, weight=class_weights.cuda())
     dice_loss = DiceLoss(total_classes)
 
-    # Initialize TPGM trainer
     tpgm = tpgm_trainer(
         model=model,
         pgmloader=tpgm_loader,
@@ -899,11 +843,10 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
         num_classes_old=old_classes
     )
 
-    # Initialize optimizer
     if args.auto_tune == "none":
         optimizer, _ = create_surgical_optimizer(model, base_lr, {}, args)
     else:
-        optimizer = None  # Will be created dynamically
+        optimizer = None
 
     scheduler = None
     writer = SummaryWriter(snapshot_path + '/log')
@@ -923,17 +866,14 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
 
     for epoch_num in iterator:
         model.train()
-        old_model.eval()  # Keep old model in eval mode
+        old_model.eval()
 
-        # Surgical fine-tuning: Calculate gradient weights at the beginning of each epoch
         if args.auto_tune != "none":
             logging.info(f"\n[EPOCH {epoch_num + 1}] Calculating gradient weights for surgical fine-tuning...")
 
-            # Calculate gradient-based weights
             weights = get_lr_weights(model, trainloader, args, ce_loss, new_classes, args.stage, old_classes)
 
             if args.auto_tune == "RGN":
-                # Normalize weights by maximum weight
                 if weights:
                     max_weight = max(weights.values()) if weights.values() else 1.0
                     logging.info(f"RGN: Max weight before normalization: {max_weight:.6f}")
@@ -941,7 +881,6 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
                         weights[k] = weights[k] / max_weight if max_weight > 0 else 0.0
 
             elif args.auto_tune == "eb-criterion":
-                # Apply threshold-based selection
                 if weights:
                     threshold = 0.95
                     min_weight = min(weights.values())
@@ -951,31 +890,25 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
                     for k in weights:
                         weights[k] = 1.0 if weights[k] >= threshold else 0.0
 
-            # Create new optimizer with updated weights
             optimizer, layer_info = create_surgical_optimizer(model, base_lr, weights, args)
             scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.max_epochs)
 
-            # Log detailed layer information
             log_layer_learning_rates(layer_info, args)
 
-        # Run TPGM (only after specified epoch and if enabled)
         if (not args.disable_tpgm and
             epoch_num >= args.tpgm_start_epoch and
             (epoch_num - args.tpgm_start_epoch + 1) % args.tpgm_frequency == 0):
             logging.info(f"Running TPGM constraint optimization after epoch {epoch_num}")
             tpgm.tpgm_iters(model, apply=False)
 
-        # Training loop
         for batch_idx, sampled_batch in enumerate(trainloader):
             image_batch, label_batch = sampled_batch['image'], sampled_batch['label']
             image_batch, label_batch = image_batch.cuda(), label_batch.cuda()
 
-            # Forward pass through both models
             outputs = model(image_batch)
             with torch.no_grad():
                 old_outputs = old_model(image_batch)
 
-            # Map new dataset labels to the expanded label space based on stage
             label_batch_mapped = map_new_dataset_labels(label_batch, args.stage, old_classes)
 
             if iter_num % 50 == 0:
@@ -985,7 +918,6 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
                 print(f"Output shape: {outputs.shape}")
                 print("===============================\n")
 
-            # Calculate losses
             loss_ce = ce_loss(outputs, label_batch_mapped.long())
             loss_dice = dice_loss(outputs, label_batch_mapped, softmax=True)
 
@@ -996,14 +928,12 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
                 temperature=args.kd_temperature
             )
 
-            # Combined loss
             loss_seg = 0.2 * loss_ce + 0.8 * loss_dice
             loss = (1 - args.kd_weight) * loss_seg + args.kd_weight * loss_kd
 
             optimizer.zero_grad()
             loss.backward()
 
-            # Gradient clipping for stability
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
             optimizer.step()
@@ -1031,7 +961,6 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
         if scheduler is not None:
             scheduler.step()
 
-        # Save model periodically
         if (epoch_num + 1) % 5 == 0 or epoch_num == max_epoch - 1:
             save_mode_path = os.path.join(snapshot_path, f'continual_surgical_tpgm_stage{args.stage}_epoch_{epoch_num}.pth')
             if args.n_gpu > 1:
@@ -1040,12 +969,10 @@ def trainer_continual_surgical_tpgm(args, model, old_model, snapshot_path, stage
                 torch.save(model.state_dict(), save_mode_path)
             logging.info("save model to {}".format(save_mode_path))
 
-    # Final TPGM projection (only if enabled)
     if not args.disable_tpgm:
         logging.info("Applying final TPGM projection")
         tpgm.tpgm_iters(model, apply=True)
 
-    # Save final model
     save_mode_path = os.path.join(snapshot_path, f'continual_surgical_tpgm_stage{args.stage}_final.pth')
     if args.n_gpu > 1:
         torch.save(model.module.state_dict(), save_mode_path)
@@ -1066,10 +993,8 @@ def calculate_extreme_class_weights(dataloader, num_classes, args, stage_info):
     old_classes, new_classes, total_classes, dataset_name = stage_info
 
     if args.stage == 1:
-        # Stage 1: classes [0, 9, 10, 11] (kits23)
         active_classes = [0] + list(range(old_classes, old_classes + new_classes - 1))
     elif args.stage == 2:
-        # Stage 2: classes [0, 12, 13] (lits17)
         active_classes = [0] + list(range(old_classes, old_classes + new_classes - 1))
 
     print(f"Active classes for weight calculation (Stage {args.stage}): {active_classes}")
@@ -1080,35 +1005,29 @@ def calculate_extreme_class_weights(dataloader, num_classes, args, stage_info):
     print("Calculating class weights from training data...")
     for batch_idx, batch_data in enumerate(dataloader):
         labels = batch_data['label']
-        # Use the proper mapping function
         labels_mapped = map_new_dataset_labels(labels, args.stage, old_classes)
 
-        # Count only active classes
         for class_id in active_classes:
             class_counts[class_id] += (labels_mapped == class_id).sum().item()
 
         total_samples += 1
-        # Only sample a few batches for speed
-        if batch_idx >= 20:
+        if batch_idx >= 20:  # Sample limited batches for speed
             break
 
     print(f"Class pixel counts: {class_counts}")
 
-    # Create weights tensor - only for active classes, others get weight 0
     class_weights = torch.zeros(num_classes)
 
     for class_id in active_classes:
         if class_counts[class_id] > 0:
             class_weights[class_id] = 1.0 / torch.sqrt(class_counts[class_id] + 1e-6)
 
-    # Normalize weights among active classes only
     active_weight_sum = sum(class_weights[i] for i in active_classes)
     if active_weight_sum > 0:
         for class_id in active_classes:
             class_weights[class_id] = class_weights[class_id] / active_weight_sum * len(active_classes)
 
-    # Cap background weight to prevent instability
-    class_weights[0] = min(class_weights[0], 0.5)
+    class_weights[0] = min(class_weights[0], 0.5)  # Cap background weight
 
     print(f"Calculated class weights: {class_weights}")
     print(f"Non-zero weights: {[(i, class_weights[i].item()) for i in range(num_classes) if class_weights[i] > 0]}")
@@ -1116,11 +1035,11 @@ def calculate_extreme_class_weights(dataloader, num_classes, args, stage_info):
     return class_weights
 
 def analyze_class_distribution(dataloader, stage=1, num_epochs=1):
+    """Analyze class distribution in the dataset"""
     class_counts = defaultdict(int)
     class_pixels = defaultdict(int)
     total_samples = 0
 
-    # Determine number of classes based on stage
     num_classes = 4 if stage == 1 else 3
 
     for epoch in range(num_epochs):
@@ -1130,8 +1049,8 @@ def analyze_class_distribution(dataloader, stage=1, num_epochs=1):
 
             for class_id in range(num_classes):
                 mask = (labels == class_id)
-                class_counts[class_id] += (mask.sum(dim=(1,2)) > 0).sum().item()  # samples containing class
-                class_pixels[class_id] += mask.sum().item()  # total pixels
+                class_counts[class_id] += (mask.sum(dim=(1,2)) > 0).sum().item()
+                class_pixels[class_id] += mask.sum().item()
 
     print(f"=== Class Distribution Analysis (Stage {stage}) ===")
     for class_id in sorted(class_counts.keys()):
@@ -1156,17 +1075,14 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    # Get stage-specific information
     stage_info = get_stage_info(args)
     old_classes, new_classes, total_classes, dataset_name = stage_info
 
-    # Create base model with appropriate number of input classes
     if args.stage == 1:
         # Stage 1: Start with Synapse model (9 classes)
         net = ViT_seg(config, img_size=args.img_size, num_classes=args.num_classes_old).cuda()
         net.load_from(config)
 
-        # Load pretrained weights
         print(f"Loading pretrained Synapse model from {args.pretrained_path}")
         pretrained_dict = torch.load(args.pretrained_path, map_location='cpu')
         pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
@@ -1176,7 +1092,6 @@ if __name__ == "__main__":
         # Stage 2: Start with Synapse+kits23 model (12 classes)
         net = ViT_seg(config, img_size=args.img_size, num_classes=old_classes).cuda()
 
-        # Load pretrained Synapse+kits23 weights
         print(f"Loading pretrained Synapse+kits23 model from {args.pretrained_path}")
         pretrained_dict = torch.load(args.pretrained_path, map_location='cpu')
 
@@ -1191,16 +1106,13 @@ if __name__ == "__main__":
 
         net.load_state_dict(new_state_dict, strict=True)
 
-    # Create old model for knowledge distillation
     old_net = copy.deepcopy(net)
     old_net.eval()
     for param in old_net.parameters():
         param.requires_grad = False
 
-    # Create continual learning model with expanded output
     cl_model = ContinualLearningModel(net, old_classes, new_classes, stage=args.stage).cuda()
 
-    # Print configuration
     print(f"\n=== Combined Continual Learning Stage {args.stage} + Surgical + TPGM Configuration ===")
     print(f"Dataset: {dataset_name}")
     print(f"Old model classes: {old_classes}")
@@ -1218,10 +1130,8 @@ if __name__ == "__main__":
     print(f"Max epochs: {args.max_epochs}")
     print("=" * 70)
 
-    # Count trainable parameters
     trainable_params = sum(p.numel() for p in cl_model.parameters() if p.requires_grad)
     total_params = sum(p.numel() for p in cl_model.parameters())
     print(f"Trainable parameters: {trainable_params:,} / {total_params:,} ({trainable_params/total_params*100:.1f}%)")
 
     trainer_continual_surgical_tpgm(args, cl_model, old_net, args.output_dir, stage_info)
-

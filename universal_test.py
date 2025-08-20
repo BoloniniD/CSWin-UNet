@@ -1,4 +1,3 @@
-# test_continual_model.py
 import argparse
 import logging
 import os
@@ -16,8 +15,8 @@ from networks.vision_transformer import CSwinUnet as ViT_seg
 from config import get_config
 from thop import profile, clever_format
 
-# Define model wrapper for handling continual learning outputs
 class ContinualTestWrapper(nn.Module):
+    """Model wrapper for handling continual learning outputs by mapping classes correctly."""
     def __init__(self, model, test_dataset, model_task_level):
         super().__init__()
         self.model = model
@@ -77,7 +76,6 @@ parser.add_argument('--deterministic', type=int, default=1, help='whether use de
 parser.add_argument('--seed', type=int, default=1234, help='random seed')
 parser.add_argument('--cfg', type=str, required=True, metavar="FILE", help='path to config file')
 
-# Additional arguments from original script
 parser.add_argument(
         "--opts",
         help="Modify config options by adding 'KEY VALUE' pairs. ",
@@ -102,7 +100,7 @@ config = get_config(args)
 
 
 def get_dataset_config(test_dataset):
-    """Get dataset configuration based on test dataset"""
+    """Get dataset configuration based on test dataset."""
     configs = {
         'synapse': {
             'Dataset': Synapse_dataset,
@@ -123,14 +121,14 @@ def get_dataset_config(test_dataset):
             'list_dir': './lists/lits17',
             'num_classes': 3,
             'z_spacing': 1,
-            'is_kits': False,  # Assuming lits17 uses different dataset class
+            'is_kits': False,
         },
     }
     return configs[test_dataset]
 
 
 def get_model_num_classes(task_level):
-    """Get total number of classes in model based on task level"""
+    """Get total number of classes in model based on task level."""
     task_classes = {
         'task1': 9,   # Base model: Synapse only
         'task2': 12,  # After task 2: Synapse + kits23 (9 + 4 - 1)
@@ -140,11 +138,10 @@ def get_model_num_classes(task_level):
 
 
 def detect_model_task_level(checkpoint_path):
-    """Detect the task level of the model from the checkpoint"""
+    """Detect the task level of the model from the checkpoint."""
     state_dict = torch.load(checkpoint_path, map_location='cpu')
     state_dict = remove_prefixes(state_dict)
 
-    # Look for the output layer to determine number of classes
     output_layer_keys = [
         'output.weight',
         'cswin_unet.output.weight',
@@ -171,7 +168,6 @@ def detect_model_task_level(checkpoint_path):
     if num_classes is None:
         raise RuntimeError("Could not detect number of classes from checkpoint")
 
-    # Map number of classes to task level
     class_to_task = {
         9: 'task1',
         12: 'task2',
@@ -187,13 +183,11 @@ def detect_model_task_level(checkpoint_path):
 
 
 def find_checkpoint(model_path):
-    """Find the appropriate checkpoint file"""
+    """Find the appropriate checkpoint file."""
     if os.path.isfile(model_path):
         return model_path
 
-    # If it's a directory, try to find the final model
     if os.path.isdir(model_path):
-        # Look for common checkpoint patterns
         checkpoint_patterns = [
             '*_final.pth',
             'task*_final.pth',
@@ -204,14 +198,13 @@ def find_checkpoint(model_path):
         for pattern in checkpoint_patterns:
             files = glob.glob(os.path.join(model_path, pattern))
             if files:
-                # Return the most recent file
                 return max(files, key=os.path.getctime)
 
     raise FileNotFoundError(f"Could not find checkpoint at {model_path}")
 
 
 def remove_prefixes(state_dict):
-    """Remove common prefixes from state dict keys"""
+    """Remove common prefixes from state dict keys."""
     prefixes_to_remove = ['base_model.', 'module.']
     new_state_dict = {}
 
@@ -226,10 +219,9 @@ def remove_prefixes(state_dict):
 
 
 def inference(args, model, test_save_path=None):
-    """Run inference on the test dataset"""
+    """Run inference on the test dataset."""
     dataset_config = get_dataset_config(args.test_dataset)
 
-    # Create dataset instance
     if args.test_dataset == 'synapse':
         db_test = dataset_config['Dataset'](
             base_dir=args.volume_path,
@@ -244,7 +236,6 @@ def inference(args, model, test_save_path=None):
             is_kits=True
         )
     elif args.test_dataset == 'lits17':
-        # You might need to implement a specific Lits_dataset class
         db_test = dataset_config['Dataset'](
             base_dir=args.volume_path,
             split="test_vol",
@@ -277,7 +268,6 @@ def inference(args, model, test_save_path=None):
 
     metric_list = metric_list / len(db_test)
 
-    # Log per-class results
     for i in range(1, num_classes):  # Skip background class in detailed logging
         logging.info('Mean class %d mean_dice %f mean_hd95 %f' %
                     (i, metric_list[i-1][0], metric_list[i-1][1]))
@@ -304,20 +294,15 @@ if __name__ == "__main__":
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
 
-    # Set up dataset configuration
     dataset_config = get_dataset_config(args.test_dataset)
 
-    # Auto-set list_dir if not provided
     if args.list_dir is None:
         args.list_dir = dataset_config['list_dir']
 
-    # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Find checkpoint
     checkpoint_path = find_checkpoint(args.model_path)
 
-    # Auto-detect model task level if not provided
     if args.model_task_level is None:
         detected_task_level, model_num_classes = detect_model_task_level(checkpoint_path)
         args.model_task_level = detected_task_level
@@ -336,7 +321,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Could not verify task level: {e}")
 
-    # Set up logging
     logging.basicConfig(
         filename=os.path.join(args.output_dir, f"test_{args.test_dataset}_{args.model_task_level}.log"),
         level=logging.INFO,
@@ -356,15 +340,12 @@ if __name__ == "__main__":
     print(f"Checkpoint Path: {checkpoint_path}")
     print("=" * 35)
 
-    # Initialize model with correct number of classes
     net = ViT_seg(config, img_size=args.img_size, num_classes=model_num_classes).cuda()
 
-    # Load checkpoint
     logging.info(f"Loading checkpoint: {checkpoint_path}")
     state_dict = torch.load(checkpoint_path, map_location='cuda')
     state_dict = remove_prefixes(state_dict)
 
-    # Load the state dict
     try:
         net.load_state_dict(state_dict, strict=True)
         logging.info("Loaded model with strict=True")
@@ -375,22 +356,19 @@ if __name__ == "__main__":
 
     print(f"Successfully loaded model from {checkpoint_path}")
 
-    # Wrap model for continual learning testing
     net = ContinualTestWrapper(net, args.test_dataset, args.model_task_level)
 
     logging.info(f"Model initialized with {model_num_classes} classes")
     logging.info(f"Testing on {args.test_dataset} with {test_num_classes} classes")
 
-    # Set up save directory if needed
     if args.is_savenii:
         test_save_path = os.path.join(args.output_dir, f"predictions_{args.test_dataset}")
         os.makedirs(test_save_path, exist_ok=True)
     else:
         test_save_path = None
 
-    # Calculate FLOPs and params
     try:
-        net_for_flops = net.model  # Use the underlying model
+        net_for_flops = net.model
         net_for_flops.eval()
         dummy_input = torch.randn(1, 3, args.img_size, args.img_size).cuda()
         flops, params = profile(net_for_flops, inputs=(dummy_input,))
@@ -402,5 +380,4 @@ if __name__ == "__main__":
     except Exception as e:
         logging.warning(f"Could not calculate FLOPs/params: {e}")
 
-    # Run inference
     inference(args, net, test_save_path)
